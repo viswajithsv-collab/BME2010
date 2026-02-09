@@ -375,8 +375,8 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
     <h2>Rankings Submitted</h2>
     <p>Your team's priorities are locked in. The instructor will reveal the class consensus shortly.</p>
     <div class="done-summary" id="doneSummary"></div>
-    <p style="color:var(--text3);font-size:.82rem;font-style:italic;margin-top:20px">
-      <span style="display:inline-block;width:7px;height:7px;background:var(--red);border-radius:50%;margin-right:6px;animation:pulse 1.4s ease-in-out infinite"></span>
+    <p id="doneStatus" style="color:var(--text3);font-size:.82rem;font-style:italic;margin-top:20px">
+      <span class="done-pulse" style="display:inline-block;width:7px;height:7px;background:var(--red);border-radius:50%;margin-right:6px;animation:pulse 1.4s ease-in-out infinite"></span>
       Waiting for all teams to finish…
     </p>
   </div>
@@ -532,7 +532,19 @@ function handleState(d){
 
   if(!teamName)return;
   if(newState==='task2'&&!submitted){if(!wasTask2){showScreen('scrTask');initTask2()}}
-  else if(newState==='task2_done'||submitted){showScreen('scrDone')}
+  else if(newState==='task2_done'){
+    if(!submitted){
+      // Time ran out before they submitted — auto-show done screen without their data
+      showScreen('scrDone');
+      document.getElementById('doneSummary').innerHTML='<p style="color:var(--gold);font-size:.92rem">Time\u2019s up! Your ranking was not submitted in time.</p>';
+    } else {
+      showScreen('scrDone');
+    }
+    // Update footer status
+    var ds=document.getElementById('doneStatus');
+    if(ds) ds.innerHTML='\u2705 Task 2 Complete — look up at the projector!';
+  }
+  else if(submitted){showScreen('scrDone')}
   else{showScreen('scrWait')}
 }
 function updateTimer(){
