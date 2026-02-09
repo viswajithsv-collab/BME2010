@@ -353,7 +353,11 @@ function onStateChange(state) {
     showScreen('scrGame');
     if (currentStage === 0) renderStage();
   }
-  // Future: task2, reveal, finished
+  if (state === 'task1_done') {
+    // Force show reveal/completion regardless of where team was
+    showReveal();
+  }
+  // Future: task2, finished
 }
 
 function handleTimer(endStr, label) {
