@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Task 2 — Projector</title>
+<style>
+/* ==================== DESIGN TOKENS ==================== */
+:root {
+  --bg: #0a0a0f;
+  --bg2: #12121a;
+  --bg3: #1a1a26;
+  --border: #2a2a3a;
+  --text: #e8e6e3;
+  --text2: #a8a6a0;
+  --text3: #68665f;
+  --red: #e74c3c;
+  --red-dim: #2a1215;
+  --blue: #3498db;
+  --blue-dim: #0f1e2d;
+  --gold: #f1c40f;
+  --gold-dim: #2a2510;
+  --green: #2ecc71;
+  --green-dim: #0f2a1a;
+  --font-head: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  --font-body: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); color:var(--text); font-family:var(--font-body); }
+
+/* ==================== SCREENS ==================== */
+.screen { display:none; width:100%; height:100%; position:absolute; top:0; left:0; }
+.screen.active { display:flex; }
+
+/* ---- SCREEN 0: TITLE + TIMER ---- */
+#scr0 {
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  gap:30px;
+}
+.title-label {
+  font-family:var(--font-head);
+  font-size:1.1rem;
+  font-weight:600;
+  letter-spacing:.2em;
+  text-transform:uppercase;
+  color:var(--text3);
+}
+.title-main {
+  font-family:var(--font-head);
+  font-size:5.5rem;
+  font-weight:800;
+  line-height:1.1;
+  letter-spacing:-.02em;
+}
+.title-main span { color:var(--gold); }
+.title-sub {
+  font-size:1.5rem;
+  color:var(--text2);
+  font-weight:400;
+  max-width:700px;
+  line-height:1.5;
+}
+.timer-huge {
+  font-family:var(--font-mono);
+  font-size:10rem;
+  font-weight:700;
+  color:var(--text);
+  letter-spacing:.05em;
+  line-height:1;
+  opacity:.85;
+}
+.timer-huge.urgent { color:var(--red); animation: pulse 1s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:.85} 50%{opacity:.5} }
+.timer-huge.done { color:var(--text3); font-size:4rem; }
+
+/* Waiting state */
+.waiting-msg {
+  font-size:1.8rem;
+  color:var(--text3);
+  font-weight:400;
+}
+
+/* ---- SCREEN 1: FEUD BOARD ---- */
+#scr1 {
+  flex-direction:column;
+  padding:50px 60px;
+}
+.feud-header {
+  text-align:center;
+  margin-bottom:30px;
+}
+.feud-header h2 {
+  font-family:var(--font-head);
+  font-size:2.2rem;
+  font-weight:700;
+}
+.feud-header h2 span { color:var(--gold); }
+.feud-header p {
+  color:var(--text2);
+  font-size:1.1rem;
+  margin-top:6px;
+}
+.feud-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px 28px;
+  flex:1;
+  align-content:start;
+}
+.feud-card {
+  display:flex;
+  align-items:center;
+  gap:16px;
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:18px 22px;
+  min-height:72px;
+  transition:all .4s ease;
+}
+.feud-card.hidden {
+  background:var(--bg3);
+  border-color:var(--border);
+}
+.feud-card.hidden .fc-content { visibility:hidden; }
+.feud-card.revealed {
+  border-color:var(--gold);
+  background:var(--gold-dim);
+  animation: cardReveal .5s ease;
+}
+@keyframes cardReveal {
+  0% { transform:scale(1.04); border-color:#f1c40f; box-shadow:0 0 30px rgba(241,196,15,.3); }
+  100% { transform:scale(1); box-shadow:none; }
+}
+.fc-rank {
+  font-family:var(--font-mono);
+  font-size:1.6rem;
+  font-weight:700;
+  color:var(--gold);
+  min-width:36px;
+  text-align:center;
+}
+.feud-card.hidden .fc-rank { color:var(--text3); }
+.fc-content { flex:1; }
+.fc-id {
+  font-family:var(--font-head);
+  font-size:1.15rem;
+  font-weight:700;
+}
+.fc-name {
+  font-size:.92rem;
+  color:var(--text2);
+  margin-top:2px;
+}
+.fc-meta {
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+.fc-avg {
+  font-family:var(--font-mono);
+  font-size:.85rem;
+  color:var(--text2);
+}
+.fc-type {
+  font-size:.7rem;
+  font-weight:600;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  padding:3px 8px;
+  border-radius:4px;
+}
+.fc-type.physio { background:var(--red-dim); color:var(--red); }
+.fc-type.hemo { background:var(--blue-dim); color:var(--blue); }
+.feud-card.hidden .fc-avg, .feud-card.hidden .fc-type { visibility:hidden; }
+
+/* ---- SCREEN 2: HEATMAP ---- */
+#scr2 {
+  flex-direction:column;
+  padding:40px 50px;
+  overflow:auto;
+}
+.scr-title {
+  font-family:var(--font-head);
+  font-size:2rem;
+  font-weight:700;
+  margin-bottom:24px;
+  text-align:center;
+}
+.hm-wrap {
+  flex:1;
+  overflow:auto;
+  display:flex;
+  justify-content:center;
+}
+.hm-table {
+  border-collapse:collapse;
+  font-size:.95rem;
+}
+.hm-table th {
+  font-family:var(--font-head);
+  font-size:.78rem;
+  font-weight:600;
+  letter-spacing:.04em;
+  color:var(--text2);
+  padding:8px 10px;
+  border-bottom:2px solid var(--border);
+  text-align:center;
+  white-space:nowrap;
+}
+.hm-table td {
+  padding:5px 6px;
+  text-align:center;
+}
+.hm-table tr:nth-child(even) { background:rgba(255,255,255,.02); }
+.hm-cell {
+  display:inline-block;
+  width:38px;
+  height:30px;
+  line-height:30px;
+  border-radius:5px;
+  font-family:var(--font-mono);
+  font-size:.82rem;
+  font-weight:600;
+}
+.hm-team {
+  text-align:left !important;
+  font-weight:600;
+  color:var(--text2);
+  padding-right:14px;
+  white-space:nowrap;
+}
+
+/* ---- SCREEN 3: PHYSIO VS HEMO ---- */
+#scr3 {
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:60px 80px;
+  text-align:center;
+  gap:40px;
+}
+.split-question {
+  font-size:1.5rem;
+  color:var(--text2);
+  max-width:800px;
+  line-height:1.6;
+}
+.split-bar-wrap {
+  width:100%;
+  max-width:900px;
+}
+.split-bar {
+  display:flex;
+  height:80px;
+  border-radius:12px;
+  overflow:hidden;
+  font-family:var(--font-head);
+  font-weight:700;
+  font-size:1.4rem;
+}
+.split-seg {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:width .6s ease;
+}
+.split-seg.physio { background:var(--red); color:#fff; }
+.split-seg.hemo { background:var(--blue); color:#fff; }
+.split-counts {
+  display:flex;
+  justify-content:space-between;
+  font-size:1.1rem;
+  color:var(--text2);
+  margin-top:14px;
+}
+.split-discuss {
+  max-width:800px;
+  border-top:1px solid var(--border);
+  padding-top:30px;
+  text-align:center;
+}
+.split-discuss h3 {
+  font-family:var(--font-head);
+  font-size:.8rem;
+  letter-spacing:.15em;
+  text-transform:uppercase;
+  color:var(--text3);
+  margin-bottom:10px;
+}
+.split-discuss p {
+  font-size:1.15rem;
+  color:var(--text2);
+  line-height:1.6;
+}
+
+/* ---- SCREEN 4: CONSIDERATIONS ---- */
+#scr4 {
+  flex-direction:column;
+  padding:40px 50px;
+  overflow:auto;
+}
+.con-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(320px, 1fr));
+  gap:16px;
+  flex:1;
+  align-content:start;
+  overflow:auto;
+}
+.con-card {
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:16px 20px;
+}
+.con-card-team {
+  font-family:var(--font-head);
+  font-size:.75rem;
+  font-weight:600;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--gold);
+  margin-bottom:8px;
+}
+.con-card-item {
+  font-size:.95rem;
+  color:var(--text2);
+  line-height:1.5;
+  padding:6px 0;
+  border-top:1px solid var(--border);
+}
+.con-card-item:first-of-type { border-top:none; }
+
+/* ---- NO DATA ---- */
+.no-data {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  height:100%;
+  width:100%;
+  font-size:1.5rem;
+  color:var(--text3);
+}
+</style>
+</head>
+<body>
+
+<!-- SCREEN 0: TITLE + TIMER -->
+<div class="screen active" id="scr0">
+  <div class="title-label">TASK 2</div>
+  <div class="title-main">Would've, Could've, <span>Should've</span></div>
+  <div class="title-sub">Rank the constraints that matter most when tuning an LVAD to work with a failing heart.</div>
+  <div class="timer-huge" id="timerDisplay">--:--</div>
+</div>
+
+<!-- SCREEN 1: FEUD BOARD -->
+<div class="screen" id="scr1">
+  <div class="feud-header">
+    <h2>Family Feud — <span>Top 8 Consensus</span></h2>
+    <p id="feudSub">Ranked by class average priority</p>
+  </div>
+  <div class="feud-grid" id="feudGrid"></div>
+</div>
+
+<!-- SCREEN 2: HEATMAP -->
+<div class="screen" id="scr2">
+  <div class="scr-title">Every Team's Rankings</div>
+  <div class="hm-wrap" id="heatmapWrap"><div class="no-data">Waiting for data…</div></div>
+</div>
+
+<!-- SCREEN 3: PHYSIO VS HEMO -->
+<div class="screen" id="scr3">
+  <div class="scr-title">Physiological vs LVAD Hemodynamic</div>
+  <div class="split-question">When teams ranked their <strong>top 4</strong> constraints, how did they split between <span style="color:var(--red)">physiological</span> and <span style="color:var(--blue)">LVAD hemodynamic</span> targets?</div>
+  <div class="split-bar-wrap">
+    <div class="split-bar" id="splitBar"><div class="no-data" style="height:auto;font-size:1rem">Waiting…</div></div>
+    <div class="split-counts" id="splitCounts"></div>
+  </div>
+  <div class="split-discuss">
+    <h3>Discussion Prompt</h3>
+    <p>Most teams prioritize physiological targets — keeping the <em>body</em> alive. But the LVAD hemodynamic constraints tell you whether the <em>device-heart partnership</em> is working. What happens if you nail the physiology numbers but the aortic valve never opens?</p>
+  </div>
+</div>
+
+<!-- SCREEN 4: CONSIDERATIONS -->
+<div class="screen" id="scr4">
+  <div class="scr-title">What Else Did Teams Consider?</div>
+  <div class="con-grid" id="conGrid"><div class="no-data">Waiting for data…</div></div>
+</div>
+
+<script>
+// ==================== CONFIG ====================
+const BACKEND = 'https://script.google.com/macros/s/AKfycbx_pEtSHZpfoCO--fsUljx04B7Hl8bYN4btYs_8Y_8jVrNckUu8KY1pIOIada5F_P52/exec';
+const POLL_MS = 1500;
+
+const C = {
+  C1:{n:'MAP',f:'Mean Arterial Pressure'},
+  C2:{n:'CO',f:'Cardiac Output'},
+  C3:{n:'CVP',f:'Central Venous Pressure'},
+  C4:{n:'PCWP',f:'Pulmonary Capillary Wedge Pressure'},
+  C5:{n:'SvO\u2082',f:'Mixed Venous O\u2082 Sat'},
+  C6:{n:'Creatinine',f:'Serum Creatinine'},
+  C7:{n:'Lactate',f:'Serum Lactate'},
+  C8:{n:'HR',f:'Heart Rate'},
+  C9:{n:'Flow Ratio',f:'Pump Flow vs Native Heart'},
+  C10:{n:'AV Opening',f:'Aortic Valve Opening'},
+  C11:{n:'PI',f:'Pulsatility Index'},
+  C12:{n:'LVEDD',f:'LV End-Diastolic Dimension'}
+};
+const PHY = ['C1','C2','C3','C4','C5','C6','C7','C8'];
+const FCOUNT = 8;
+
+// ==================== STATE ====================
+let currentScreen = -1; // -1 = not yet set
+let revealedSlots = {};
+let timerEnd = null;
+let cachedReveal = null;
+let lastRevealJSON = '';
+
+// ==================== API ====================
+let cbCount = 0;
+function api(action, params, cb) {
+  const name = '_p2cb' + (cbCount++);
+  window[name] = function(d) { delete window[name]; if (cb) cb(d); };
+  let url = BACKEND + '?callback=' + name + '&action=' + action;
+  if (params) {
+    for (var k in params) url += '&' + k + '=' + encodeURIComponent(params[k]);
+  }
+  var s = document.createElement('script');
+  s.src = url;
+  s.onerror = function() { delete window[name]; };
+  document.body.appendChild(s);
+  setTimeout(function() { if (s.parentNode) s.parentNode.removeChild(s); }, 10000);
+}
+
+// ==================== POLLING ====================
+function pollAll() {
+  api('getState', null, handleState);
+  api('getTask2Reveal', null, handleRevealData);
+}
+
+function handleState(d) {
+  if (d.error) return;
+
+  // Timer
+  if (d.timer_end) {
+    timerEnd = new Date(d.timer_end).getTime();
+  } else {
+    timerEnd = null;
+  }
+  updateTimer();
+
+  // Parse projector screen from timer_label
+  if (d.timer_label && d.timer_label.indexOf('t2scr:') === 0) {
+    var parts = d.timer_label.substring(6).split(':');
+    var scr = parseInt(parts[0]);
+    if (!isNaN(scr) && scr >= 0 && scr <= 4) {
+      switchScreen(scr);
+    }
+    // Parse revealed slots
+    var newSlots = {};
+    if (parts[1]) {
+      var slots = parts[1].split(',').filter(function(s){ return s !== ''; });
+      for (var i = 0; i < slots.length; i++) {
+        var idx = parseInt(slots[i]);
+        if (!isNaN(idx)) newSlots[idx] = true;
+      }
+    }
+    // Check for newly revealed slots (for animation)
+    for (var k in newSlots) {
+      if (!revealedSlots[k]) {
+        // New reveal — trigger animation on feud card
+        animateReveal(parseInt(k));
+      }
+    }
+    revealedSlots = newSlots;
+    renderFeudBoard();
+  }
+
+  // If state is waiting or task1_done, show title screen with no timer
+  var state = d.game_state || 'waiting';
+  if (state === 'waiting' || state === 'task1_done') {
+    switchScreen(0);
+    document.getElementById('timerDisplay').textContent = '';
+    document.getElementById('timerDisplay').className = 'waiting-msg';
+    // Show waiting message or blank
+  }
+}
+
+function updateTimer() {
+  var el = document.getElementById('timerDisplay');
+  if (!timerEnd) {
+    // Only update if we're on screen 0
+    if (currentScreen === 0 && el.className !== 'waiting-msg') {
+      el.textContent = '--:--';
+      el.className = 'timer-huge';
+    }
+    return;
+  }
+  var remaining = timerEnd - Date.now();
+  if (remaining <= 0) {
+    el.textContent = "Time's up!";
+    el.className = 'timer-huge done';
+    return;
+  }
+  var mins = Math.floor(remaining / 60000);
+  var secs = Math.floor((remaining % 60000) / 1000);
+  el.textContent = mins + ':' + String(secs).padStart(2, '0');
+  el.className = 'timer-huge' + (remaining < 60000 ? ' urgent' : '');
+}
+
+// ==================== SCREEN SWITCHING ====================
+function switchScreen(n) {
+  if (n === currentScreen) return;
+  currentScreen = n;
+  for (var i = 0; i <= 4; i++) {
+    document.getElementById('scr' + i).className = (i === n) ? 'screen active' : 'screen';
+  }
+}
+
+// ==================== REVEAL DATA ====================
+function handleRevealData(d) {
+  if (d.error) return;
+  cachedReveal = d;
+  renderFeudBoard();
+  renderHeatmap();
+  renderSplit();
+  renderConsiders();
+}
+
+// ==================== FEUD BOARD ====================
+function renderFeudBoard() {
+  if (!cachedReveal || !cachedReveal.classConsensus) return;
+  var consensus = cachedReveal.classConsensus;
+  var grid = document.getElementById('feudGrid');
+  var count = Math.min(FCOUNT, consensus.length);
+
+  var html = '';
+  for (var i = 0; i < count; i++) {
+    var s = consensus[i];
+    var cData = C[s.id] || { n: s.id, f: s.id };
+    var isPhysio = PHY.indexOf(s.id) >= 0;
+    var isRevealed = revealedSlots[i] ? true : false;
+
+    html += '<div class="feud-card ' + (isRevealed ? 'revealed' : 'hidden') + '" id="fc' + i + '">';
+    html += '<div class="fc-rank">#' + (i + 1) + '</div>';
+    html += '<div class="fc-content">';
+    html += '<div class="fc-id">' + s.id + ' — ' + cData.n + '</div>';
+    html += '<div class="fc-name">' + cData.f + '</div>';
+    html += '</div>';
+    html += '<div class="fc-meta">';
+    html += '<div class="fc-avg">Avg ' + s.avgRank + '</div>';
+    html += '<div class="fc-type ' + (isPhysio ? 'physio' : 'hemo') + '">' + (isPhysio ? 'Physio' : 'LVAD Hemo') + '</div>';
+    html += '</div>';
+    html += '</div>';
+  }
+  grid.innerHTML = html;
+}
+
+function animateReveal(idx) {
+  // Slight delay to let DOM update, then re-trigger animation
+  setTimeout(function() {
+    var card = document.getElementById('fc' + idx);
+    if (card) {
+      card.style.animation = 'none';
+      card.offsetHeight; // force reflow
+      card.style.animation = '';
+    }
+  }, 50);
+}
+
+// ==================== HEATMAP ====================
+function renderHeatmap() {
+  var wrap = document.getElementById('heatmapWrap');
+  if (!cachedReveal || !cachedReveal.heatMap || cachedReveal.heatMap.length === 0) {
+    wrap.innerHTML = '<div class="no-data">Waiting for submissions…</div>';
+    return;
+  }
+  var d = cachedReveal;
+  var consensus = d.classConsensus || [];
+  var cols = consensus.map(function(c) { return c.id; });
+
+  var html = '<table class="hm-table"><tr><th style="text-align:left">Team</th>';
+  for (var c = 0; c < cols.length; c++) {
+    var cData = C[cols[c]] || {};
+    html += '<th>' + cols[c] + '<br><span style="font-weight:400;font-size:.68rem;color:var(--text3)">' + (cData.n || '') + '</span></th>';
+  }
+  html += '</tr>';
+
+  for (var t = 0; t < d.heatMap.length; t++) {
+    var team = d.heatMap[t];
+    html += '<tr><td class="hm-team">' + team.teamName.replace('Group ', 'G') + '</td>';
+    for (var c = 0; c < cols.length; c++) {
+      var rk = team.rankings[cols[c]];
+      if (rk) {
+        var hu = rk <= 3 ? 140 : rk <= 6 ? 80 : rk <= 9 ? 35 : 0;
+        var li = rk <= 3 ? 20 : 22;
+        html += '<td><span class="hm-cell" style="background:hsl(' + hu + ',65%,' + li + '%);color:hsl(' + hu + ',65%,' + (li + 35) + '%)">' + rk + '</span></td>';
+      } else {
+        html += '<td><span class="hm-cell" style="background:var(--border);color:var(--text3)">—</span></td>';
+      }
+    }
+    html += '</tr>';
+  }
+  html += '</table>';
+  wrap.innerHTML = html;
+}
+
+// ==================== PHYSIO VS HEMO ====================
+function renderSplit() {
+  if (!cachedReveal || !cachedReveal.physioVsHemo || cachedReveal.physioVsHemo.totalTop4Slots === 0) return;
+
+  var pv = cachedReveal.physioVsHemo;
+  var total = pv.totalTop4Slots || 1;
+  var pp = Math.round(pv.physioInTop4 / total * 100);
+  var hp = 100 - pp;
+
+  document.getElementById('splitBar').innerHTML =
+    '<div class="split-seg physio" style="width:' + pp + '%">' + pp + '% Physio</div>' +
+    '<div class="split-seg hemo" style="width:' + hp + '%">' + hp + '% Hemo</div>';
+
+  document.getElementById('splitCounts').innerHTML =
+    '<span><strong>' + pv.physioInTop4 + '</strong> physiological slots</span>' +
+    '<span><strong>' + pv.hemoInTop4 + '</strong> hemodynamic slots</span>';
+}
+
+// ==================== CONSIDERATIONS ====================
+function renderConsiders() {
+  var grid = document.getElementById('conGrid');
+  if (!cachedReveal || !cachedReveal.considerations || Object.keys(cachedReveal.considerations).length === 0) {
+    grid.innerHTML = '<div class="no-data">No considerations yet…</div>';
+    return;
+  }
+
+  var html = '';
+  for (var teamName in cachedReveal.considerations) {
+    var cons = cachedReveal.considerations[teamName];
+    if (!cons || cons.length === 0) continue;
+    html += '<div class="con-card">';
+    html += '<div class="con-card-team">' + teamName + '</div>';
+    for (var j = 0; j < cons.length; j++) {
+      html += '<div class="con-card-item">' + cons[j] + '</div>';
+    }
+    html += '</div>';
+  }
+  grid.innerHTML = html || '<div class="no-data">No considerations submitted</div>';
+}
+
+// ==================== TIMER TICK ====================
+setInterval(updateTimer, 500);
+
+// ==================== START POLLING ====================
+pollAll();
+setInterval(pollAll, POLL_MS);
+</script>
+</body>
+</html>
