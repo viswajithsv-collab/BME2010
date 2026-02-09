@@ -148,7 +148,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
       <div class="panel-title">Game Controls</div>
       <div class="ctrl-row">
         <button class="btn btn-gold" onclick="doAssignCascades()">Assign Cascades</button>
-        <button class="btn btn-red" id="startBtn" onclick="doSetState('task1')">Start Bad Blood</button>
+        <button class="btn btn-red" id="startBtn" onclick="doStartGame()">Start Bad Blood</button>
         <button class="btn btn-out" id="freezeBtn" onclick="doToggleFreeze()">⏸ Freeze</button>
         <button class="btn btn-red" onclick="doEndTask1()" style="background:#8b0000">⏹ End Task 1</button>
       </div>
@@ -455,6 +455,17 @@ function doSetState(state) {
   api('setState', { state: state }, function(d) {
     if (d.error) { alert('Error: ' + d.error); return; }
     pollAll();
+  });
+}
+
+function doStartGame() {
+  const mins = parseInt(document.getElementById('timerMin').value) || 10;
+  api('setState', { state: 'task1' }, function(d) {
+    if (d.error) { alert('Error: ' + d.error); return; }
+    // Auto-start timer
+    api('setTimer', { seconds: mins * 60, label: 'Bad Blood' }, function() {
+      pollAll();
+    });
   });
 }
 
