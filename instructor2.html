@@ -657,9 +657,11 @@ function doToggleFreeze() {
 function doEndTask2() {
   if (!confirm('End Task 2? This will stop the game.')) return;
   api('setFreeze', { frozen: 'false' }, function() {
-    api('setState', { state: 'task2_done' }, function(d) {
-      if (d.error) { alert('Error: ' + d.error); return; }
-      pollAll();
+    api('clearTimer', {}, function() {
+      api('setState', { state: 'task2_done' }, function(d) {
+        if (d.error) { alert('Error: ' + d.error); return; }
+        pollAll();
+      });
     });
   });
 }
