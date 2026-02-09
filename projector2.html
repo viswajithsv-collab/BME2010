@@ -131,11 +131,6 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); col
 .feud-card.revealed {
   border-color:var(--gold);
   background:var(--gold-dim);
-  animation: cardReveal .5s ease;
-}
-@keyframes cardReveal {
-  0% { transform:scale(1.04); border-color:#f1c40f; box-shadow:0 0 30px rgba(241,196,15,.3); }
-  100% { transform:scale(1); box-shadow:none; }
 }
 .fc-rank {
   font-family:var(--font-mono);
@@ -161,11 +156,6 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); col
   display:flex;
   gap:10px;
   align-items:center;
-}
-.fc-avg {
-  font-family:var(--font-mono);
-  font-size:.85rem;
-  color:var(--text2);
 }
 .fc-type {
   font-size:.7rem;
@@ -299,43 +289,34 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); col
   line-height:1.6;
 }
 
-/* ---- SCREEN 4: CONSIDERATIONS ---- */
+/* ---- SCREEN 4: WORD CLOUD ---- */
 #scr4 {
   flex-direction:column;
+  align-items:center;
+  justify-content:center;
   padding:40px 50px;
-  overflow:auto;
 }
-.con-grid {
-  display:grid;
-  grid-template-columns:repeat(auto-fill, minmax(320px, 1fr));
-  gap:16px;
+.cloud-wrap {
   flex:1;
-  align-content:start;
-  overflow:auto;
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  align-content:center;
+  justify-content:center;
+  gap:8px 16px;
+  max-width:1100px;
+  padding:20px;
 }
-.con-card {
-  background:var(--bg2);
-  border:1px solid var(--border);
-  border-radius:10px;
-  padding:16px 20px;
-}
-.con-card-team {
+.cloud-word {
   font-family:var(--font-head);
-  font-size:.75rem;
-  font-weight:600;
-  letter-spacing:.08em;
-  text-transform:uppercase;
-  color:var(--gold);
-  margin-bottom:8px;
+  font-weight:700;
+  line-height:1.3;
+  padding:4px 8px;
+  border-radius:6px;
+  transition:all .3s;
+  cursor:default;
 }
-.con-card-item {
-  font-size:.95rem;
-  color:var(--text2);
-  line-height:1.5;
-  padding:6px 0;
-  border-top:1px solid var(--border);
-}
-.con-card-item:first-of-type { border-top:none; }
+.cloud-word:hover { background:rgba(255,255,255,.06); }
 
 /* ---- NO DATA ---- */
 .no-data {
@@ -388,10 +369,10 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); col
   </div>
 </div>
 
-<!-- SCREEN 4: CONSIDERATIONS -->
+<!-- SCREEN 4: WORD CLOUD -->
 <div class="screen" id="scr4">
   <div class="scr-title">What Else Did Teams Consider?</div>
-  <div class="con-grid" id="conGrid"><div class="no-data">Waiting for data…</div></div>
+  <div class="cloud-wrap" id="cloudWrap"><div class="no-data">Waiting for data…</div></div>
 </div>
 
 <script>
@@ -472,13 +453,6 @@ function handleState(d) {
         if (!isNaN(idx)) newSlots[idx] = true;
       }
     }
-    // Check for newly revealed slots (for animation)
-    for (var k in newSlots) {
-      if (!revealedSlots[k]) {
-        // New reveal — trigger animation on feud card
-        animateReveal(parseInt(k));
-      }
-    }
     revealedSlots = newSlots;
     renderFeudBoard();
   }
@@ -555,24 +529,11 @@ function renderFeudBoard() {
     html += '<div class="fc-name">' + cData.f + '</div>';
     html += '</div>';
     html += '<div class="fc-meta">';
-    html += '<div class="fc-avg">Avg ' + s.avgRank + '</div>';
     html += '<div class="fc-type ' + (isPhysio ? 'physio' : 'hemo') + '">' + (isPhysio ? 'Physio' : 'LVAD Hemo') + '</div>';
     html += '</div>';
     html += '</div>';
   }
   grid.innerHTML = html;
-}
-
-function animateReveal(idx) {
-  // Slight delay to let DOM update, then re-trigger animation
-  setTimeout(function() {
-    var card = document.getElementById('fc' + idx);
-    if (card) {
-      card.style.animation = 'none';
-      card.offsetHeight; // force reflow
-      card.style.animation = '';
-    }
-  }, 50);
 }
 
 // ==================== HEATMAP ====================
@@ -630,26 +591,100 @@ function renderSplit() {
     '<span><strong>' + pv.hemoInTop4 + '</strong> hemodynamic slots</span>';
 }
 
-// ==================== CONSIDERATIONS ====================
+// ==================== WORD CLOUD ====================
 function renderConsiders() {
-  var grid = document.getElementById('conGrid');
+  var wrap = document.getElementById('cloudWrap');
   if (!cachedReveal || !cachedReveal.considerations || Object.keys(cachedReveal.considerations).length === 0) {
-    grid.innerHTML = '<div class="no-data">No considerations yet…</div>';
+    wrap.innerHTML = '<div class="no-data">No considerations yet…</div>';
     return;
   }
 
-  var html = '';
+  // Collect all consideration text, tokenize, count frequencies
+  var freq = {};
+  var stopWords = {'the':1,'a':1,'an':1,'and':1,'or':1,'but':1,'in':1,'on':1,'at':1,'to':1,'for':1,'of':1,'with':1,'by':1,'is':1,'it':1,'be':1,'as':1,'do':1,'if':1,'no':1,'not':1,'so':1,'up':1,'we':1,'our':1,'its':1,'was':1,'are':1,'has':1,'had':1,'can':1,'may':1,'will':1,'this':1,'that':1,'than':1,'from':1,'they':1,'them':1,'their':1,'also':1,'more':1,'very':1,'just':1,'about':1,'into':1,'over':1,'such':1,'what':1,'which':1,'who':1,'how':1,'when':1,'where':1,'should':1,'could':1,'would':1,'been':1,'have':1,'does':1,'did':1,'get':1,'got':1,'like':1,'make':1,'need':1,'etc':1,'e.g':1,'i.e':1};
+
+  // First pass: collect all raw text
+  var allText = [];
   for (var teamName in cachedReveal.considerations) {
     var cons = cachedReveal.considerations[teamName];
-    if (!cons || cons.length === 0) continue;
-    html += '<div class="con-card">';
-    html += '<div class="con-card-team">' + teamName + '</div>';
+    if (!cons) continue;
     for (var j = 0; j < cons.length; j++) {
-      html += '<div class="con-card-item">' + cons[j] + '</div>';
+      allText.push(cons[j]);
     }
-    html += '</div>';
   }
-  grid.innerHTML = html || '<div class="no-data">No considerations submitted</div>';
+
+  // Try to preserve meaningful phrases (2-3 word combos) first
+  // Then fall back to single words
+  var phrases = {};
+  for (var i = 0; i < allText.length; i++) {
+    var clean = allText[i].toLowerCase().replace(/[^a-z0-9\s'-]/g, ' ').replace(/\s+/g, ' ').trim();
+    var words = clean.split(' ').filter(function(w) { return w.length > 2; });
+
+    // Count bigrams
+    for (var w = 0; w < words.length - 1; w++) {
+      if (!stopWords[words[w]] && !stopWords[words[w+1]]) {
+        var bi = words[w] + ' ' + words[w+1];
+        phrases[bi] = (phrases[bi] || 0) + 1;
+      }
+    }
+    // Count single words
+    for (var w = 0; w < words.length; w++) {
+      if (!stopWords[words[w]] && words[w].length > 2) {
+        freq[words[w]] = (freq[words[w]] || 0) + 1;
+      }
+    }
+  }
+
+  // Merge: prefer bigrams that appear 2+ times, then singles
+  var cloudItems = [];
+  var usedInBigram = {};
+  for (var bi in phrases) {
+    if (phrases[bi] >= 2) {
+      cloudItems.push({ text: bi, count: phrases[bi] * 1.5 }); // boost bigrams
+      var parts = bi.split(' ');
+      usedInBigram[parts[0]] = true;
+      usedInBigram[parts[1]] = true;
+    }
+  }
+  for (var w in freq) {
+    if (!usedInBigram[w] || freq[w] >= 3) {
+      cloudItems.push({ text: w, count: freq[w] });
+    }
+  }
+
+  // Sort by count desc, take top 40
+  cloudItems.sort(function(a, b) { return b.count - a.count; });
+  cloudItems = cloudItems.slice(0, 40);
+
+  if (cloudItems.length === 0) {
+    wrap.innerHTML = '<div class="no-data">No considerations yet…</div>';
+    return;
+  }
+
+  // Compute sizes
+  var maxC = cloudItems[0].count;
+  var minC = cloudItems[cloudItems.length - 1].count;
+  var range = maxC - minC || 1;
+
+  // Color palette
+  var colors = ['#e74c3c','#3498db','#f1c40f','#2ecc71','#e67e22','#9b59b6','#1abc9c','#e84393','#00cec9','#fdcb6e'];
+
+  // Shuffle for visual variety
+  for (var i = cloudItems.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = cloudItems[i]; cloudItems[i] = cloudItems[j]; cloudItems[j] = tmp;
+  }
+
+  var html = '';
+  for (var i = 0; i < cloudItems.length; i++) {
+    var item = cloudItems[i];
+    var t = (item.count - minC) / range; // 0..1
+    var size = 1.0 + t * 3.0; // 1rem to 4rem
+    var color = colors[i % colors.length];
+    var opacity = 0.6 + t * 0.4;
+    html += '<span class="cloud-word" style="font-size:' + size.toFixed(1) + 'rem;color:' + color + ';opacity:' + opacity.toFixed(2) + '">' + item.text + '</span>';
+  }
+  wrap.innerHTML = html;
 }
 
 // ==================== TIMER TICK ====================
