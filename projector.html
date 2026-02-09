@@ -397,7 +397,16 @@ function updateTimer() {
 function onStateChange(state) {
   document.getElementById('scrWaiting').classList.toggle('hidden', state !== 'waiting');
   document.getElementById('scrRace').classList.toggle('hidden', state !== 'task1');
-  // done screen handled by progress check
+  
+  // task1_done = show done screen
+  if (state === 'task1_done') {
+    document.getElementById('scrRace').classList.add('hidden');
+    document.getElementById('scrWaiting').classList.add('hidden');
+    document.getElementById('convergeBanner').classList.remove('show');
+    document.getElementById('scrDone').classList.add('show');
+  } else {
+    document.getElementById('scrDone').classList.remove('show');
+  }
 }
 
 function handleProgress(d) {
