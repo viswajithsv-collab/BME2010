@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🩸 Instructor — Bad Blood</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080810;--bg-card:#0f0f1a;--bg-hover:#161624;
+  --border:#1e1528;--border-hot:#5c1a2a;
+  --red:#c41e3a;--red-bright:#e8334f;--red-dim:#3d0f1a;
+  --gold:#c9a84c;--gold-dim:#6b5a2a;
+  --green:#34c769;--green-dim:#1a3d28;
+  --blue:#4a90d9;--blue-dim:#1a2d4a;
+  --purple:#9b59b6;--purple-dim:#2d1a3d;
+  --text:#e4dde0;--text2:#8a7e84;--text3:#4a4248;
+  --font-head:'Oswald',sans-serif;--font-body:'Lora',serif;
+}
+html{font-size:15px}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-height:100vh}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 60% 40% at 15% 80%,rgba(196,30,58,.05) 0%,transparent 70%)}
+
+.wrap{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:20px 24px 60px}
+
+/* HEADER */
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:16px 0 20px;border-bottom:1px solid var(--border);margin-bottom:24px}
+.hdr-left h1{font-family:var(--font-head);font-size:1.6rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase}
+.hdr-left h1 span{color:var(--red-bright)}
+.hdr-left .sub{font-size:.72rem;color:var(--text3);font-family:var(--font-head);letter-spacing:.12em;text-transform:uppercase;margin-top:2px}
+.state-badge{font-family:var(--font-head);font-size:.85rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:8px 18px;border-radius:6px;border:1px solid var(--border)}
+.state-badge.waiting{color:var(--text3);border-color:var(--text3)}
+.state-badge.task1{color:var(--red-bright);border-color:var(--red);background:var(--red-dim)}
+.state-badge.task2{color:var(--gold);border-color:var(--gold-dim);background:rgba(201,168,76,.06)}
+.state-badge.finished{color:var(--green);border-color:var(--green);background:var(--green-dim)}
+
+/* PANELS */
+.panels{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px}
+.panel{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:20px}
+.panel-title{font-family:var(--font-head);font-size:.72rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text3);margin-bottom:14px;font-weight:600}
+.panel.full{grid-column:1/-1}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 22px;border:none;border-radius:6px;font-family:var(--font-head);font-size:.78rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:all .15s;margin:0 6px 8px 0}
+.btn-red{background:var(--red);color:#fff}.btn-red:hover{background:var(--red-bright)}
+.btn-red:disabled{background:var(--red-dim);color:var(--text3);cursor:not-allowed}
+.btn-out{background:transparent;border:1px solid var(--border);color:var(--text2)}
+.btn-out:hover{border-color:var(--text2);color:var(--text)}
+.btn-green{background:var(--green);color:#fff}.btn-green:hover{background:#3dd97a}
+.btn-gold{background:var(--gold);color:#080810}.btn-gold:hover{background:#d9b85c}
+.btn-danger{background:#661a1a;color:#d4a0a0;border:1px solid #4a1111}.btn-danger:hover{background:#7a2020}
+
+/* CONTROLS ROW */
+.ctrl-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.ctrl-divider{width:1px;height:28px;background:var(--border);margin:0 8px}
+
+/* TIMER CONTROLS */
+.timer-input{display:inline-flex;align-items:center;gap:6px}
+.timer-input input{width:60px;padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:var(--font-head);font-size:.85rem;text-align:center}
+.timer-input input:focus{border-color:var(--red);outline:none}
+.timer-input label{font-family:var(--font-head);font-size:.7rem;color:var(--text3);letter-spacing:.08em;text-transform:uppercase}
+.timer-live{font-family:var(--font-head);font-size:4.5rem;letter-spacing:.08em;color:var(--text3);text-align:center;margin-top:12px;line-height:1}
+.timer-live.active{color:var(--text)}
+.timer-live.urgent{color:var(--red-bright);animation:timerPulse 1s infinite}
+@keyframes timerPulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* RACE TRACKER */
+.race{display:flex;flex-direction:column;gap:6px}
+.race-row{display:flex;align-items:center;gap:8px;padding:6px 0}
+.race-label{width:80px;flex-shrink:0;font-family:var(--font-head);font-size:.78rem;font-weight:600;letter-spacing:.04em;color:var(--text2)}
+.race-cascade{width:22px;height:22px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-size:.65rem;font-weight:700;flex-shrink:0}
+.race-cascade.A{background:var(--red-dim);color:var(--red-bright);border:1px solid var(--red)}
+.race-cascade.B{background:var(--blue-dim);color:var(--blue);border:1px solid var(--blue)}
+.race-cascade.C{background:var(--purple-dim);color:var(--purple);border:1px solid var(--purple)}
+.race-cascade.none{background:var(--bg);color:var(--text3);border:1px solid var(--border)}
+.race-pips{display:flex;gap:4px;flex:1}
+.race-pip{height:24px;flex:1;border-radius:4px;background:var(--border);transition:all .4s}
+.race-pip.done{background:var(--green)}
+.race-pip.active{background:var(--red);box-shadow:0 0 8px rgba(196,30,58,.3)}
+.race-pip.done-A{background:var(--red-bright)}.race-pip.done-B{background:var(--blue)}.race-pip.done-C{background:var(--purple)}
+.race-check{font-size:.9rem;flex-shrink:0;width:24px;text-align:center}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.stat-box{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px;text-align:center}
+.stat-box .lbl{font-family:var(--font-head);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:6px}
+.stat-box .val{font-family:var(--font-head);font-size:1.6rem;font-weight:700;color:var(--text)}
+.stat-box .val.good{color:var(--green)}
+.stat-box .val.mid{color:var(--gold)}
+.stat-box .val.bad{color:var(--red-bright)}
+.stat-box .detail{font-size:.7rem;color:var(--text3);margin-top:4px;font-family:var(--font-head);letter-spacing:.04em}
+
+/* LOG */
+.log{max-height:220px;overflow-y:auto;font-size:.78rem;color:var(--text3);font-family:monospace;line-height:1.7;padding:8px;background:var(--bg);border-radius:6px;border:1px solid var(--border)}
+.log .correct{color:var(--green)}.log .wrong{color:var(--red-bright)}
+
+/* LEGEND */
+.legend{display:flex;gap:16px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.legend-item{display:flex;align-items:center;gap:6px;font-family:var(--font-head);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--text2)}
+.legend-dot{width:10px;height:10px;border-radius:3px}
+.legend-dot.A{background:var(--red-bright)}.legend-dot.B{background:var(--blue)}.legend-dot.C{background:var(--purple)}
+
+@media(max-width:800px){.panels{grid-template-columns:1fr}.stats-grid{grid-template-columns:repeat(3,1fr)}}
+
+/* RESULTS TABLE */
+.results-table{width:100%;border-collapse:collapse;font-family:var(--font-head);font-size:.78rem}
+.results-table th{text-align:center;padding:10px 8px;color:var(--text3);font-weight:600;letter-spacing:.06em;text-transform:uppercase;border-bottom:1px solid var(--border);font-size:.65rem}
+.results-table th span{display:block;font-size:.55rem;font-weight:400;letter-spacing:.1em;color:var(--text3);opacity:.6;margin-top:2px}
+.results-table td{text-align:center;padding:8px 6px;border-bottom:1px solid rgba(30,21,40,.5);font-size:.82rem;color:var(--text2)}
+.results-table tr:hover td{background:var(--bg-hover)}
+.results-table .cell-correct{color:var(--green);font-weight:600}
+.results-table .cell-wrong{color:var(--red-bright);font-weight:600}
+.results-table .cell-pending{color:var(--text3)}
+.results-table .score{font-weight:700;font-size:.9rem}
+.results-table .score.perfect{color:var(--green)}
+.results-table .score.good{color:var(--gold)}
+.results-table .score.low{color:var(--red-bright)}
+.results-table .status-done{color:var(--green);font-weight:600}
+.results-table .status-playing{color:var(--gold);font-weight:600}
+.results-table .status-waiting{color:var(--text3)}
+
+/* DEMO OVERLAY */
+.demo-banner{display:none;background:var(--gold-dim);border:1px solid var(--gold);border-radius:8px;padding:10px 18px;margin-bottom:20px;text-align:center;font-family:var(--font-head);font-size:.8rem;letter-spacing:.06em;color:var(--gold)}
+.demo-banner.show{display:block}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="hdr-left">
+      <h1>Bad <span>Blood</span> — Control</h1>
+      <div class="sub">Instructor Dashboard</div>
+    </div>
+    <div class="state-badge waiting" id="stateBadge">WAITING</div>
+  </div>
+
+  <!-- DEMO BANNER -->
+  <div class="demo-banner" id="demoBanner">🎭 DEMO MODE — Simulated data. Click demo button again to restart.</div>
+
+  <!-- CONTROLS -->
+  <div class="panels">
+    <div class="panel">
+      <div class="panel-title">Game Controls</div>
+      <div class="ctrl-row">
+        <button class="btn btn-gold" onclick="doAssignCascades()">Assign Cascades</button>
+        <button class="btn btn-red" id="startBtn" onclick="doSetState('task1')">Start Bad Blood</button>
+        <button class="btn btn-out" id="freezeBtn" onclick="doToggleFreeze()">⏸ Freeze</button>
+      </div>
+      <div class="ctrl-row" style="margin-top:10px">
+        <button class="btn btn-out" onclick="doSetState('waiting')">⟵ Waiting</button>
+        <button class="btn btn-out" onclick="doSetState('task2')">Task 2 →</button>
+        <div class="ctrl-divider"></div>
+        <button class="btn btn-gold" onclick="runDemo()">🎭 Demo (Simulate 15 Teams)</button>
+        <div class="ctrl-divider"></div>
+        <button class="btn btn-danger" onclick="doReset()">Reset Task 1</button>
+        <button class="btn btn-danger" onclick="doResetAll()">Reset All</button>
+      </div>
+      <div class="ctrl-row" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+        <span style="font-family:var(--font-head);font-size:.7rem;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-right:8px">REVEAL:</span>
+        <button class="btn btn-out" id="revealBtn0" onclick="doReveal(0)">Hide</button>
+        <button class="btn btn-gold" id="revealBtn1" onclick="doReveal(1)">① Three Diseases</button>
+        <button class="btn btn-gold" id="revealBtn2" onclick="doReveal(2)">② Convergence Map</button>
+        <button class="btn btn-red" id="revealBtn3" onclick="doReveal(3)">③ Engineering Insight</button>
+        <span style="font-family:var(--font-head);font-size:.75rem;color:var(--text3);margin-left:8px" id="revealStatus">Step: 0</span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Timer</div>
+      <div class="ctrl-row" style="align-items:flex-end">
+        <div class="timer-input">
+          <div>
+            <label>Minutes</label>
+            <input type="number" id="timerMin" value="10" min="1" max="60">
+          </div>
+        </div>
+        <button class="btn btn-red" onclick="doStartTimer()">Start Timer</button>
+        <button class="btn btn-out" onclick="doClearTimer()">Clear</button>
+      </div>
+      <div class="timer-live" id="timerLive">--:--</div>
+    </div>
+  </div>
+
+  <!-- RACE TRACKER -->
+  <div class="panels">
+    <div class="panel full">
+      <div class="panel-title">Live Race — Task 1</div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot A"></div>Cascade A — Ischemic</div>
+        <div class="legend-item"><div class="legend-dot B"></div>Cascade B — Dilated</div>
+        <div class="legend-item"><div class="legend-dot C"></div>Cascade C — Hypertensive</div>
+      </div>
+      <div class="race" id="raceTracker">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS + LOG -->
+  <div class="panels">
+    <div class="panel">
+      <div class="panel-title">Accuracy by Stage</div>
+      <div class="stats-grid" id="stageStats">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Live Log</div>
+      <div class="log" id="liveLog">Waiting for responses…</div>
+    </div>
+  </div>
+
+  <!-- RESULTS TABLE -->
+  <div class="panels">
+    <div class="panel full">
+      <div class="panel-title">Results — Team Breakdown</div>
+      <div style="overflow-x:auto">
+        <table class="results-table" id="resultsTable">
+          <thead>
+            <tr>
+              <th>Group</th>
+              <th>Cascade</th>
+              <th>Stage 1<br><span>Cause</span></th>
+              <th>Stage 2<br><span>Trigger</span></th>
+              <th>Stage 3<br><span>Event</span></th>
+              <th>Stage 4<br><span>Short-Term</span></th>
+              <th>Stage 5<br><span>Long-Term</span></th>
+              <th>Score</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="resultsBody">
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const BACKEND = 'https://script.google.com/macros/s/AKfycbx_pEtSHZpfoCO--fsUljx04B7Hl8bYN4btYs_8Y_8jVrNckUu8KY1pIOIada5F_P52/exec';
+const POLL_MS = 2000;
+const STAGE_LABELS = ['Cause','Trigger','Event','Short-Term','Long-Term'];
+
+let currentState = 'waiting';
+let frozen = false;
+let timerEnd = null;
+let timerInterval = null;
+let lastLogCount = 0;
+let pollTimer = null;
+
+// ==================== API ====================
+let cbCount = 0;
+function api(action, params, cb) {
+  const name = '_icb' + (cbCount++);
+  window[name] = function(d) { delete window[name]; if (cb) cb(d); };
+  let url = BACKEND + '?callback=' + name + '&action=' + action;
+  if (params) for (const k in params) url += '&' + encodeURIComponent(k) + '=' + encodeURIComponent(params[k]);
+  const s = document.createElement('script');
+  s.src = url;
+  s.onerror = () => delete window[name];
+  document.body.appendChild(s);
+  setTimeout(() => { if (s.parentNode) s.parentNode.removeChild(s); }, 10000);
+}
+
+// ==================== POLLING ====================
+function startPolling() {
+  pollTimer = setInterval(pollAll, POLL_MS);
+  pollAll();
+}
+
+function pollAll() {
+  api('getState', null, handleState);
+  api('getTask1Progress', null, handleProgress);
+}
+
+function handleState(d) {
+  if (d.error) return;
+
+  // State badge
+  currentState = d.game_state || 'waiting';
+  const badge = document.getElementById('stateBadge');
+  badge.textContent = currentState.toUpperCase();
+  badge.className = 'state-badge ' + currentState;
+
+  // Freeze
+  frozen = d.freeze === true || d.freeze === 'true';
+  const fb = document.getElementById('freezeBtn');
+  fb.textContent = frozen ? '▶ Unfreeze' : '⏸ Freeze';
+  fb.className = frozen ? 'btn btn-green' : 'btn btn-out';
+
+  // Timer
+  if (d.timer_end) {
+    timerEnd = new Date(d.timer_end).getTime();
+    if (!timerInterval) {
+      timerInterval = setInterval(updateTimer, 500);
+      updateTimer();
+    }
+  } else {
+    timerEnd = null;
+    if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+    document.getElementById('timerLive').textContent = '--:--';
+    document.getElementById('timerLive').className = 'timer-live';
+  }
+}
+
+function updateTimer() {
+  if (!timerEnd) return;
+  const remaining = Math.max(0, timerEnd - Date.now());
+  const mins = Math.floor(remaining / 60000);
+  const secs = Math.floor((remaining % 60000) / 1000);
+  const el = document.getElementById('timerLive');
+  el.textContent = mins + ':' + String(secs).padStart(2, '0');
+  el.className = 'timer-live' + (remaining > 0 ? ' active' : '') + (remaining < 60000 && remaining > 0 ? ' urgent' : '');
+}
+
+function handleProgress(d) {
+  if (d.error || demoMode) return;
+  renderRace(d.progress || []);
+  renderStats(d.stageStats || {});
+  renderLog(d.teamResponses || {});
+  renderResults(d.progress || [], d.teamResponses || {});
+}
+
+// ==================== RACE TRACKER ====================
+function renderRace(progress) {
+  const container = document.getElementById('raceTracker');
+  let html = '';
+
+  // Sort by group number
+  progress.sort((a, b) => {
+    const na = parseInt(a.teamName.replace('Group ', ''));
+    const nb = parseInt(b.teamName.replace('Group ', ''));
+    return na - nb;
+  });
+
+  for (const team of progress) {
+    const casc = team.cascade || '';
+    const stage = team.stage || 0;
+    const complete = team.complete;
+
+    let pips = '';
+    for (let s = 1; s <= 5; s++) {
+      let cls = 'race-pip';
+      if (complete || s < stage) cls += ' done done-' + casc;
+      else if (s === stage) cls += ' active';
+      pips += `<div class="${cls}" title="Stage ${s}: ${STAGE_LABELS[s-1]}"></div>`;
+    }
+
+    html += `
+      <div class="race-row">
+        <div class="race-label">${team.teamName}</div>
+        <div class="race-cascade ${casc || 'none'}">${casc || '—'}</div>
+        <div class="race-pips">${pips}</div>
+        <div class="race-check">${complete ? '✅' : ''}</div>
+      </div>
+    `;
+  }
+
+  container.innerHTML = html || '<div style="color:var(--text3);font-size:.85rem">No teams yet. Run "Assign Cascades" first.</div>';
+}
+
+// ==================== STATS ====================
+function renderStats(stageStats) {
+  const container = document.getElementById('stageStats');
+  let html = '';
+
+  for (let s = 1; s <= 5; s++) {
+    let total = 0, correct = 0;
+    // Sum across all cascades
+    ['A','B','C'].forEach(c => {
+      const key = c + '-' + s;
+      if (stageStats[key]) {
+        total += stageStats[key].total;
+        correct += stageStats[key].correct;
+      }
+    });
+
+    const pct = total > 0 ? Math.round((correct / total) * 100) : 0;
+    let cls = 'val';
+    if (total === 0) cls += '';
+    else if (pct >= 70) cls += ' good';
+    else if (pct >= 40) cls += ' mid';
+    else cls += ' bad';
+
+    html += `
+      <div class="stat-box">
+        <div class="lbl">${STAGE_LABELS[s-1]}</div>
+        <div class="${cls}">${total > 0 ? pct + '%' : '—'}</div>
+        <div class="detail">${correct}/${total}</div>
+      </div>
+    `;
+  }
+
+  container.innerHTML = html;
+}
+
+// ==================== LOG ====================
+function renderLog(teamResponses) {
+  const log = document.getElementById('liveLog');
+  let entries = [];
+
+  for (const team in teamResponses) {
+    for (const r of teamResponses[team]) {
+      entries.push({
+        team: team,
+        stage: r.stage,
+        qId: r.questionId,
+        letter: r.selectedLetter,
+        correct: r.correct
+      });
+    }
+  }
+
+  if (entries.length === 0) {
+    log.innerHTML = 'Waiting for responses…';
+    return;
+  }
+
+  // Show most recent at top
+  entries.reverse();
+
+  // Only update if count changed
+  if (entries.length === lastLogCount) return;
+  lastLogCount = entries.length;
+
+  log.innerHTML = entries.slice(0, 60).map(e => {
+    const cls = e.correct ? 'correct' : 'wrong';
+    const icon = e.correct ? '✓' : '✗';
+    return `<span class="${cls}">${icon}</span> ${e.team} → Stage ${e.stage} (${e.letter})`;
+  }).join('<br>');
+
+  log.scrollTop = 0;
+}
+
+// ==================== ACTIONS ====================
+function doAssignCascades() {
+  if (!confirm('Assign random cascades to all 15 groups?')) return;
+  api('assignCascades', null, function(d) {
+    if (d.error) { alert('Error: ' + d.error); return; }
+    alert('Cascades assigned! ' + d.assignments.map(a => a.teamName + '→' + a.cascade).join(', '));
+    pollAll();
+  });
+}
+
+function doSetState(state) {
+  api('setState', { state: state }, function(d) {
+    if (d.error) { alert('Error: ' + d.error); return; }
+    pollAll();
+  });
+}
+
+function doToggleFreeze() {
+  api('setFreeze', { frozen: frozen ? 'false' : 'true' }, function(d) {
+    if (d.error) { alert('Error: ' + d.error); return; }
+    pollAll();
+  });
+}
+
+function doStartTimer() {
+  const mins = parseInt(document.getElementById('timerMin').value) || 10;
+  api('setTimer', { seconds: mins * 60, label: 'Bad Blood' }, function(d) {
+    if (d.error) { alert('Error: ' + d.error); return; }
+    pollAll();
+  });
+}
+
+function doClearTimer() {
+  api('clearTimer', null, function(d) { pollAll(); });
+}
+
+function doReset() {
+  if (!confirm('Reset Task 1? This clears all responses and progress but keeps team names.')) return;
+  api('resetTask1', null, function(d) {
+    if (d.error) { alert('Error: ' + d.error); return; }
+    alert(d.message);
+    lastLogCount = 0;
+    pollAll();
+  });
+}
+
+function doResetAll() {
+  if (!confirm('NUCLEAR RESET — clear everything including teams?')) return;
+  if (!confirm('Are you sure? This is irreversible.')) return;
+  api('resetAll', null, function(d) {
+    if (d.error) { alert('Error: ' + d.error); return; }
+    alert(d.message);
+    lastLogCount = 0;
+    pollAll();
+  });
+}
+
+function doReveal(step) {
+  // Update backend reveal_step
+  api('setRevealStep', { step: step }, function(d) {
+    if (d.error) { alert('Error: ' + d.error); return; }
+    document.getElementById('revealStatus').textContent = 'Step: ' + step;
+    // Highlight active button
+    for (let i = 0; i <= 3; i++) {
+      const btn = document.getElementById('revealBtn' + i);
+      if (i === step) {
+        btn.style.outline = '2px solid var(--gold)';
+        btn.style.outlineOffset = '2px';
+      } else {
+        btn.style.outline = 'none';
+      }
+    }
+  });
+}
+
+// ==================== INIT ====================
+startPolling();
+
+// ==================== DEMO MODE ====================
+let demoMode = false;
+let demoInterval = null;
+let demoTeams = [];
+
+function runDemo() {
+  // If already in demo, reset and restart
+  if (demoInterval) { clearInterval(demoInterval); demoInterval = null; }
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+  demoMode = true;
+  lastLogCount = 0;
+  document.getElementById('demoBanner').classList.add('show');
+
+  // Stop real polling
+  clearInterval(pollTimer);
+
+  // Create 15 fake teams
+  const cascades = [];
+  for (let i = 0; i < 15; i++) cascades.push(['A','B','C'][i % 3]);
+  shuffle(cascades);
+
+  demoTeams = [];
+  for (let i = 1; i <= 15; i++) {
+    demoTeams.push({
+      teamName: 'Group ' + i,
+      cascade: cascades[i-1],
+      stage: 1,
+      complete: false,
+      responses: [],
+      speed: 800 + Math.random() * 2200 // ms between answers
+    });
+  }
+
+  // Update state badge
+  currentState = 'task1';
+  const badge = document.getElementById('stateBadge');
+  badge.textContent = 'TASK 1 (DEMO)';
+  badge.className = 'state-badge task1';
+
+  // Start demo timer
+  timerEnd = Date.now() + 10 * 60 * 1000;
+  if (!timerInterval) {
+    timerInterval = setInterval(updateTimer, 500);
+    updateTimer();
+  }
+
+  // Run simulation
+  demoInterval = setInterval(demoTick, 400);
+  demoRender();
+}
+
+function demoTick() {
+  let allDone = true;
+
+  for (const t of demoTeams) {
+    if (t.complete) continue;
+    allDone = false;
+
+    t._elapsed = (t._elapsed || 0) + 400;
+    if (t._elapsed < t.speed) continue;
+    t._elapsed = 0;
+
+    // Answer current stage
+    const correct = Math.random() > 0.25; // 75% accuracy
+    const letters = ['A','B','C','D'];
+    const correctLetter = letters[Math.floor(Math.random() * 4)];
+    const selectedLetter = correct ? correctLetter : letters.filter(l => l !== correctLetter)[Math.floor(Math.random() * 3)];
+
+    t.responses.push({
+      stage: t.stage,
+      questionId: t.cascade + t.stage + '-Q' + (Math.floor(Math.random()*3)+1),
+      selectedLetter: selectedLetter,
+      correct: correct
+    });
+
+    if (correct) {
+      if (t.stage >= 5) {
+        t.complete = true;
+      } else {
+        t.stage++;
+      }
+    }
+    // If wrong, they stay on same stage but next tick will try again
+    // (simulates the reveal + move on behavior — just advance them)
+    if (!correct) {
+      t.responses.push({
+        stage: t.stage,
+        questionId: t.cascade + t.stage + '-Q' + (Math.floor(Math.random()*3)+1),
+        selectedLetter: correctLetter,
+        correct: true // the reveal
+      });
+      if (t.stage >= 5) {
+        t.complete = true;
+      } else {
+        t.stage++;
+      }
+    }
+  }
+
+  demoRender();
+
+  if (allDone) {
+    clearInterval(demoInterval);
+    demoInterval = null;
+  }
+}
+
+function demoRender() {
+  // Build progress
+  const progress = demoTeams.map(t => ({
+    teamName: t.teamName,
+    cascade: t.cascade,
+    stage: t.complete ? 5 : t.stage,
+    complete: t.complete
+  }));
+
+  // Build stageStats
+  const stageStats = {};
+  const teamResponses = {};
+  for (const t of demoTeams) {
+    teamResponses[t.teamName] = t.responses;
+    for (const r of t.responses) {
+      const key = t.cascade + '-' + r.stage;
+      if (!stageStats[key]) stageStats[key] = { total: 0, correct: 0 };
+      stageStats[key].total++;
+      if (r.correct) stageStats[key].correct++;
+    }
+  }
+
+  renderRace(progress);
+  renderStats(stageStats);
+  renderLog(teamResponses);
+  renderResults(progress, teamResponses);
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+}
+
+// ==================== RESULTS TABLE ====================
+function renderResults(progress, teamResponses) {
+  const body = document.getElementById('resultsBody');
+  if (!progress || progress.length === 0) {
+    body.innerHTML = '<tr><td colspan="9" style="color:var(--text3);padding:20px">No data yet</td></tr>';
+    return;
+  }
+
+  // Sort by group number
+  progress.sort((a, b) => {
+    const na = parseInt(a.teamName.replace('Group ', ''));
+    const nb = parseInt(b.teamName.replace('Group ', ''));
+    return na - nb;
+  });
+
+  let html = '';
+  for (const team of progress) {
+    const responses = teamResponses[team.teamName] || [];
+    
+    // Get final answer per stage (the last response for each stage)
+    const stageResults = {};
+    for (const r of responses) {
+      stageResults[r.stage] = r; // last one wins (which is the correct reveal if they got it wrong)
+    }
+
+    // Get first attempt per stage to know if they got it right on first try
+    const firstAttempts = {};
+    for (const r of responses) {
+      if (!firstAttempts[r.stage]) firstAttempts[r.stage] = r;
+    }
+
+    let correctCount = 0;
+    let stageCells = '';
+    for (let s = 1; s <= 5; s++) {
+      const first = firstAttempts[s];
+      if (!first) {
+        stageCells += '<td class="cell-pending">—</td>';
+      } else if (first.correct) {
+        correctCount++;
+        stageCells += `<td class="cell-correct">✓ ${first.selectedLetter}</td>`;
+      } else {
+        stageCells += `<td class="cell-wrong">✗ ${first.selectedLetter}</td>`;
+      }
+    }
+
+    const scorePct = Math.round((correctCount / 5) * 100);
+    let scoreCls = 'score';
+    if (scorePct === 100) scoreCls += ' perfect';
+    else if (scorePct >= 60) scoreCls += ' good';
+    else scoreCls += ' low';
+
+    let status, statusCls;
+    if (team.complete) { status = 'DONE'; statusCls = 'status-done'; }
+    else if (team.stage > 0 && team.cascade) { status = 'Stage ' + team.stage; statusCls = 'status-playing'; }
+    else { status = '—'; statusCls = 'status-waiting'; }
+
+    html += `
+      <tr>
+        <td style="font-weight:600;color:var(--text)">${team.teamName}</td>
+        <td><span class="race-cascade ${team.cascade || 'none'}" style="display:inline-flex;margin:0 auto">${team.cascade || '—'}</span></td>
+        ${stageCells}
+        <td class="${scoreCls}">${correctCount}/5</td>
+        <td class="${statusCls}">${status}</td>
+      </tr>
+    `;
+  }
+
+  body.innerHTML = html;
+}
+</script>
+</body>
+</html>
