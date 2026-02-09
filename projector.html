@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🩸 Bad Blood — Live</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080810;--bg-card:#0f0f1a;--bg-hover:#161624;
+  --border:#1e1528;--border-hot:#5c1a2a;
+  --red:#c41e3a;--red-bright:#e8334f;--red-dim:#3d0f1a;
+  --gold:#c9a84c;--gold-dim:#6b5a2a;
+  --green:#34c769;--green-dim:#1a3d28;
+  --text:#e4dde0;--text2:#8a7e84;--text3:#4a4248;
+  --font-head:'Oswald',sans-serif;--font-body:'Lora',serif;
+}
+html{font-size:18px}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-height:100vh}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 60% 40% at 15% 80%,rgba(196,30,58,.07) 0%,transparent 70%),
+  radial-gradient(ellipse 50% 50% at 85% 15%,rgba(100,15,30,.05) 0%,transparent 60%)}
+
+.wrap{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:16px 32px;min-height:100vh;display:flex;flex-direction:column}
+
+/* ===== HEADER ===== */
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 0 16px;border-bottom:1px solid var(--border);flex-shrink:0}
+.hdr-left h1{font-family:var(--font-head);font-size:1.8rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;line-height:1.1}
+.hdr-left h1 span{color:var(--red-bright)}
+.hdr-left .sub{font-size:.6rem;color:var(--text3);font-family:var(--font-head);letter-spacing:.15em;text-transform:uppercase;margin-top:2px}
+
+/* ===== TIMER ===== */
+.timer-box{text-align:right}
+.timer-label{font-family:var(--font-head);font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text3);margin-bottom:2px}
+.timer{font-family:var(--font-head);font-size:5rem;font-weight:700;letter-spacing:.06em;line-height:1;color:var(--text3);transition:color .3s}
+.timer.active{color:var(--text)}
+.timer.urgent{color:var(--red-bright);animation:timerPulse 1s infinite}
+@keyframes timerPulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ===== RACE TRACKER ===== */
+.race-section{flex:1;display:flex;flex-direction:column;padding:16px 0;overflow:hidden}
+.race-title{font-family:var(--font-head);font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;font-weight:600}
+.stage-headers{display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:0 0 6px;border-bottom:1px solid var(--border)}
+.stage-headers .lbl-spacer{width:88px;flex-shrink:0}
+.stage-headers .stage-hdrs{display:flex;gap:5px;flex:1}
+.stage-hdr{flex:1;text-align:center;font-family:var(--font-head);font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text3)}
+.stage-headers .check-spacer{width:36px;flex-shrink:0}
+
+.race{display:flex;flex-direction:column;gap:5px;flex:1;overflow-y:auto}
+.race-row{display:flex;align-items:center;gap:8px;padding:4px 0;transition:all .3s}
+.race-label{width:88px;flex-shrink:0;font-family:var(--font-head);font-size:.85rem;font-weight:600;letter-spacing:.04em;color:var(--text2)}
+.race-pips{display:flex;gap:5px;flex:1}
+.race-pip{height:30px;flex:1;border-radius:5px;background:var(--border);transition:all .5s ease}
+.race-pip.done{background:var(--green)}
+.race-pip.active{background:var(--red);box-shadow:0 0 12px rgba(196,30,58,.35)}
+.race-check{width:36px;flex-shrink:0;text-align:center;font-size:1.1rem}
+
+/* ===== CONVERGENCE ANIMATION ===== */
+.convergence-banner{
+  position:fixed;bottom:0;left:0;right:0;z-index:100;
+  background:linear-gradient(180deg,transparent,rgba(201,168,76,.08) 30%,rgba(201,168,76,.15));
+  border-top:1px solid var(--gold-dim);
+  padding:18px 32px;text-align:center;
+  transform:translateY(100%);transition:transform .6s cubic-bezier(.22,1,.36,1);
+  pointer-events:none;
+}
+.convergence-banner.show{transform:translateY(0)}
+.convergence-banner h2{
+  font-family:var(--font-head);font-size:1.4rem;font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--gold);
+  margin-bottom:4px;
+}
+.convergence-banner p{color:var(--gold-dim);font-size:.8rem;font-family:var(--font-body);font-style:italic}
+.convergence-count{
+  font-family:var(--font-head);font-size:2.2rem;font-weight:700;color:var(--gold);
+  margin-bottom:2px;
+}
+
+/* ===== FROZEN OVERLAY ===== */
+.frozen{display:none;position:fixed;inset:0;background:rgba(8,8,16,.94);z-index:200;align-items:center;justify-content:center;text-align:center;flex-direction:column}
+.frozen.show{display:flex}
+.frozen h2{font-family:var(--font-head);font-size:4rem;color:var(--text2);letter-spacing:.12em;text-transform:uppercase}
+.frozen p{color:var(--text3);margin-top:8px;font-size:1.1rem}
+
+/* ===== WAITING SCREEN ===== */
+.waiting-screen{display:flex;align-items:center;justify-content:center;flex:1;text-align:center;flex-direction:column}
+.waiting-screen h2{font-family:var(--font-head);font-size:2.5rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text2)}
+.waiting-screen p{color:var(--text3);font-size:1rem;margin-top:8px}
+.waiting-screen .pulse-dot{display:inline-block;width:10px;height:10px;background:var(--red);border-radius:50%;margin-right:8px;animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.3;transform:scale(1)}50%{opacity:1;transform:scale(1.4)}}
+.team-count{font-family:var(--font-head);font-size:1.2rem;color:var(--text3);margin-top:24px;letter-spacing:.06em}
+
+/* ===== DONE SCREEN ===== */
+.done-screen{display:none;align-items:center;justify-content:center;flex:1;text-align:center;flex-direction:column}
+.done-screen.show{display:flex}
+.done-screen h2{font-family:var(--font-head);font-size:3rem;text-transform:uppercase;letter-spacing:.04em;color:var(--green);margin-bottom:8px}
+.done-screen p{color:var(--text2);font-size:1.1rem}
+
+.hidden{display:none!important}
+
+/* ===== REVEAL SCREEN ===== */
+.reveal-screen{display:none;flex:1;flex-direction:column;justify-content:center;align-items:center;padding:8px 0}
+.reveal-screen.show{display:flex}
+.reveal-step{display:none;width:100%;margin-bottom:12px;animation:revealFade .8s ease}
+.reveal-step.show{display:block}
+@keyframes revealFade{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+/* Step 1: Three Diseases */
+.reveal-step-eyebrow{text-align:center;font-family:var(--font-head);font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:var(--red);margin-bottom:16px}
+.disease-cols{display:flex;gap:16px;justify-content:center}
+.disease-col{flex:1;max-width:240px;text-align:center;padding:16px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px}
+.disease-col.col-a{border-top:3px solid var(--red-bright)}
+.disease-col.col-b{border-top:3px solid #4a90d9}
+.disease-col.col-c{border-top:3px solid #9b59b6}
+.disease-letter{font-family:var(--font-head);font-size:1.8rem;font-weight:700;margin-bottom:4px}
+.col-a .disease-letter{color:var(--red-bright)}
+.col-b .disease-letter{color:#4a90d9}
+.col-c .disease-letter{color:#9b59b6}
+.disease-name{font-family:var(--font-head);font-size:1rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;line-height:1.2;margin-bottom:6px}
+.disease-oneliner{font-family:var(--font-body);font-size:.72rem;color:var(--text2);font-style:italic;line-height:1.4}
+
+/* Step 2: Convergence Map */
+.convergence-map{width:100%;max-width:820px;margin:0 auto;padding-top:12px}
+.map-columns{display:flex;gap:12px;justify-content:center;margin-bottom:0}
+.map-col{flex:1;max-width:220px;display:flex;flex-direction:column;align-items:center;gap:3px}
+.map-node{font-family:var(--font-head);font-size:.62rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:7px 10px;border-radius:5px;text-align:center;width:100%;line-height:1.25}
+.node-a{background:var(--red-dim);color:var(--red-bright);border:1px solid rgba(196,30,58,.3)}
+.node-b{background:#1a2d4a;color:#4a90d9;border:1px solid rgba(74,144,217,.3)}
+.node-c{background:#2d1a3d;color:#9b59b6;border:1px solid rgba(155,89,182,.3)}
+.node-converge{background:rgba(201,168,76,.08);color:var(--gold);border:1px solid var(--gold-dim);max-width:300px;font-size:.7rem;padding:8px 16px}
+.node-endpoint{background:var(--red);color:#fff;border:1px solid var(--red-bright);max-width:300px;font-size:.78rem;font-weight:700;padding:10px 20px;box-shadow:0 0 16px rgba(196,30,58,.3)}
+.map-arrow{color:var(--text3);font-size:.9rem;line-height:1;padding:1px 0}
+.merge-arrow{font-size:1.1rem}
+.merge-zone{display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:2px;padding-top:10px;border-top:1px solid var(--gold-dim)}
+.merge-label{font-family:var(--font-head);font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:4px;font-weight:600}
+
+/* Step 3: Engineering Insight */
+.insight-box{text-align:center;max-width:650px;margin:0 auto;padding:14px 0 60px}
+.insight-eyebrow{font-family:var(--font-head);font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--text3);margin-bottom:16px}
+.insight-main{font-family:var(--font-head);font-size:1.4rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;line-height:1.3;color:var(--text)}
+.insight-highlight{color:var(--red-bright);font-size:1.8rem}
+.insight-arrow{font-size:1.6rem;color:var(--red);margin:14px 0}
+.insight-kicker{font-family:var(--font-body);font-size:.88rem;color:var(--text2);line-height:1.6;margin-top:20px;max-width:500px;margin-left:auto;margin-right:auto}
+.insight-tagline{font-family:var(--font-head);font-size:1.1rem;font-weight:600;color:var(--gold);letter-spacing:.08em;text-transform:uppercase;margin-top:18px}
+
+/* Step 4: Class Stats */
+.stats-reveal{text-align:center;padding:10px 0 60px}
+.stats-reveal-title{font-family:var(--font-head);font-size:1.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text);margin-bottom:24px}
+.stats-reveal-grid{display:flex;gap:16px;justify-content:center}
+.stats-reveal-card{flex:1;max-width:160px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:20px 12px;text-align:center}
+.stats-stage-label{font-family:var(--font-head);font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;font-weight:600}
+.stats-pct{font-family:var(--font-head);font-size:3rem;font-weight:700;line-height:1}
+.stats-pct.good{color:var(--green)}
+.stats-pct.mid{color:var(--gold)}
+.stats-pct.bad{color:var(--red-bright)}
+.stats-pct.none{color:var(--text3)}
+.stats-ratio{font-family:var(--font-head);font-size:.7rem;color:var(--text3);margin-top:6px;letter-spacing:.04em}
+.stats-reveal-overall{font-family:var(--font-head);font-size:1rem;color:var(--text2);margin-top:24px;letter-spacing:.04em}
+</style>
+</head>
+<body>
+
+<!-- FROZEN OVERLAY -->
+<div class="frozen" id="frozenOverlay"><h2>⏸ Paused</h2><p>Eyes up — instructor is talking.</p></div>
+
+<!-- CONVERGENCE BANNER -->
+<div class="convergence-banner" id="convergeBanner">
+  <div class="convergence-count" id="convergeCount">0 / 15</div>
+  <h2>⟐ Convergence</h2>
+  <p>Teams are reaching the same destination — different roads, same answer.</p>
+</div>
+
+<div class="wrap">
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="hdr-left">
+      <h1>Bad <span>Blood</span></h1>
+      <div class="sub">The Race Is On</div>
+    </div>
+    <div class="timer-box">
+      <div class="timer-label">Time Remaining</div>
+      <div class="timer" id="timerDisplay">--:--</div>
+    </div>
+  </div>
+
+  <!-- WAITING SCREEN -->
+  <div class="waiting-screen" id="scrWaiting">
+    <h2><span class="pulse-dot"></span>Waiting for Teams</h2>
+    <p>The game will begin shortly.</p>
+    <div class="team-count" id="teamCount"></div>
+    <button onclick="runDemo()" style="margin-top:32px;padding:10px 24px;background:var(--gold-dim);border:1px solid var(--gold);border-radius:6px;font-family:var(--font-head);font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);cursor:pointer">🎭 Run Demo</button>
+  </div>
+
+  <!-- RACE SCREEN -->
+  <div class="race-section hidden" id="scrRace">
+    <div class="stage-headers">
+      <div class="lbl-spacer"></div>
+      <div class="stage-hdrs">
+        <div class="stage-hdr">Cause</div>
+        <div class="stage-hdr">Trigger</div>
+        <div class="stage-hdr">Event</div>
+        <div class="stage-hdr">Short-Term</div>
+        <div class="stage-hdr">Long-Term</div>
+      </div>
+      <div class="check-spacer"></div>
+    </div>
+    <div class="race" id="raceTracker"></div>
+  </div>
+
+  <!-- DONE SCREEN -->
+  <div class="done-screen" id="scrDone">
+    <h2>✓ All Teams Finished</h2>
+    <p>Three roads. One destination. Stand by for the reveal…</p>
+  </div>
+
+  <!-- REVEAL SCREEN -->
+  <div class="reveal-screen" id="scrReveal">
+    
+    <!-- STEP 1: Three Diseases -->
+    <div class="reveal-step" id="revStep1">
+      <div class="reveal-step-eyebrow">The three pathways were</div>
+      <div class="disease-cols">
+        <div class="disease-col col-a">
+          <div class="disease-letter">A</div>
+          <div class="disease-name">Ischemic<br>Cardiomyopathy</div>
+          <div class="disease-oneliner">Clogged supply lines starved the muscle</div>
+        </div>
+        <div class="disease-col col-b">
+          <div class="disease-letter">B</div>
+          <div class="disease-name">Nonischemic Dilated<br>Cardiomyopathy</div>
+          <div class="disease-oneliner">The muscle itself was defective from the start</div>
+        </div>
+        <div class="disease-col col-c">
+          <div class="disease-letter">C</div>
+          <div class="disease-name">Hypertensive<br>Cardiomyopathy</div>
+          <div class="disease-oneliner">Relentless pressure burned the heart out</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2: Convergence Map -->
+    <div class="reveal-step" id="revStep2">
+      <div class="convergence-map">
+        <div class="map-columns">
+          <!-- Column A -->
+          <div class="map-col">
+            <div class="map-node node-a">Coronary Artery Disease</div>
+            <div class="map-arrow">↓</div>
+            <div class="map-node node-a">Myocardial Infarction</div>
+            <div class="map-arrow">↓</div>
+            <div class="map-node node-a">Ventricular Remodeling</div>
+            <div class="map-arrow merge-arrow">↘</div>
+          </div>
+          <!-- Column B -->
+          <div class="map-col">
+            <div class="map-node node-b">Weak Heart Muscle</div>
+            <div class="map-arrow">↓</div>
+            <div class="map-node node-b">Physiological Stressor</div>
+            <div class="map-arrow">↓</div>
+            <div class="map-node node-b">Acute Decompensation</div>
+            <div class="map-arrow merge-arrow">↓</div>
+          </div>
+          <!-- Column C -->
+          <div class="map-col">
+            <div class="map-node node-c">Chronic Hypertension</div>
+            <div class="map-arrow">↓</div>
+            <div class="map-node node-c">Diastolic Dysfunction</div>
+            <div class="map-arrow">↓</div>
+            <div class="map-node node-c">Burned-Out Dilation</div>
+            <div class="map-arrow merge-arrow">↙</div>
+          </div>
+        </div>
+        <!-- Merge point -->
+        <div class="merge-zone">
+          <div class="merge-label">⟐ CONVERGE</div>
+          <div class="map-node node-converge">Sympathetic Compensation</div>
+          <div class="map-arrow" style="color:var(--red-bright);font-size:1.4rem">↓</div>
+          <div class="map-node node-converge">End-Stage Heart Failure</div>
+          <div class="map-arrow" style="color:var(--red-bright);font-size:1.4rem">↓</div>
+          <div class="map-node node-endpoint">LVAD Candidacy</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3: Engineering Insight -->
+    <div class="reveal-step" id="revStep3">
+      <div class="insight-box">
+        <div class="insight-eyebrow">The Engineering Principle</div>
+        <div class="insight-main">Different failure modes can produce the<br>same system-level failure</div>
+        <div class="insight-arrow">↓</div>
+        <div class="insight-main">And the same system-level<br><span class="insight-highlight">engineering solution</span></div>
+        <div class="insight-kicker">The heart is a pump. When it fails, the solution is mechanical.<br>That's the LVAD.</div>
+        <div class="insight-tagline">Three roads. One destination.</div>
+      </div>
+    </div>
+
+    <!-- STEP 4: Class Stats -->
+    <div class="reveal-step" id="revStep4">
+      <div class="stats-reveal">
+        <div class="stats-reveal-title">How Did You Do?</div>
+        <div class="stats-reveal-grid" id="projectorStats">
+          <div class="stats-reveal-card" id="pStat1"><div class="stats-stage-label">Cause</div><div class="stats-pct">—</div><div class="stats-ratio"></div></div>
+          <div class="stats-reveal-card" id="pStat2"><div class="stats-stage-label">Trigger</div><div class="stats-pct">—</div><div class="stats-ratio"></div></div>
+          <div class="stats-reveal-card" id="pStat3"><div class="stats-stage-label">Event</div><div class="stats-pct">—</div><div class="stats-ratio"></div></div>
+          <div class="stats-reveal-card" id="pStat4"><div class="stats-stage-label">Short-Term</div><div class="stats-pct">—</div><div class="stats-ratio"></div></div>
+          <div class="stats-reveal-card" id="pStat5"><div class="stats-stage-label">Long-Term</div><div class="stats-pct">—</div><div class="stats-ratio"></div></div>
+        </div>
+        <div class="stats-reveal-overall" id="projectorOverall"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const BACKEND = 'https://script.google.com/macros/s/AKfycbx_pEtSHZpfoCO--fsUljx04B7Hl8bYN4btYs_8Y_8jVrNckUu8KY1pIOIada5F_P52/exec';
+const POLL_MS = 2000;
+
+let currentState = 'waiting';
+let timerEnd = null;
+let timerInterval = null;
+let lastConvergeCount = 0;
+let currentRevealStep = 0;
+let cachedStageStats = {};
+
+// ==================== API ====================
+let cbCount = 0;
+function api(action, params, cb) {
+  const name = '_pcb' + (cbCount++);
+  window[name] = function(d) { delete window[name]; if (cb) cb(d); };
+  let url = BACKEND + '?callback=' + name + '&action=' + action;
+  if (params) for (const k in params) url += '&' + encodeURIComponent(k) + '=' + encodeURIComponent(params[k]);
+  const s = document.createElement('script');
+  s.src = url;
+  s.onerror = () => delete window[name];
+  document.body.appendChild(s);
+  setTimeout(() => { if (s.parentNode) s.parentNode.removeChild(s); }, 10000);
+}
+
+// ==================== POLLING ====================
+setInterval(pollAll, POLL_MS);
+pollAll();
+
+function pollAll() {
+  api('getState', null, handleState);
+  api('getTask1Progress', null, handleProgress);
+}
+
+function handleState(d) {
+  if (d.error || demoMode) return;
+
+  // Freeze
+  const frozen = d.freeze === true || d.freeze === 'true';
+  document.getElementById('frozenOverlay').classList.toggle('show', frozen);
+
+  // Timer
+  if (d.timer_end) {
+    timerEnd = new Date(d.timer_end).getTime();
+    if (!timerInterval) {
+      timerInterval = setInterval(updateTimer, 500);
+      updateTimer();
+    }
+  } else {
+    timerEnd = null;
+    if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+    const el = document.getElementById('timerDisplay');
+    el.textContent = '--:--';
+    el.className = 'timer';
+  }
+
+  // State transition
+  const newState = d.game_state || 'waiting';
+  if (newState !== currentState) {
+    currentState = newState;
+    onStateChange(newState);
+  }
+
+  // Reveal step
+  const revStep = parseInt(d.reveal_step) || 0;
+  if (revStep !== currentRevealStep) {
+    currentRevealStep = revStep;
+    handleReveal(revStep);
+  }
+}
+
+function updateTimer() {
+  if (!timerEnd) return;
+  const remaining = Math.max(0, timerEnd - Date.now());
+  const mins = Math.floor(remaining / 60000);
+  const secs = Math.floor((remaining % 60000) / 1000);
+  const el = document.getElementById('timerDisplay');
+  el.textContent = mins + ':' + String(secs).padStart(2, '0');
+  el.className = 'timer' + (remaining > 0 ? ' active' : '') + (remaining < 60000 && remaining > 0 ? ' urgent' : '');
+}
+
+function onStateChange(state) {
+  document.getElementById('scrWaiting').classList.toggle('hidden', state !== 'waiting');
+  document.getElementById('scrRace').classList.toggle('hidden', state !== 'task1');
+  // done screen handled by progress check
+}
+
+function handleProgress(d) {
+  if (d.error || demoMode) return;
+  const progress = d.progress || [];
+
+  if (currentState === 'waiting') {
+    // Show team count on waiting screen
+    const registered = progress.filter(t => t.cascade).length;
+    document.getElementById('teamCount').textContent = registered > 0 ? registered + ' teams ready' : '';
+    return;
+  }
+
+  if (currentState !== 'task1') return;
+
+  renderRace(progress);
+  checkConvergence(progress);
+
+  // Cache stage stats for reveal
+  if (d.stageStats) cachedStageStats = d.stageStats;
+
+  // Check if all done
+  const allDone = progress.length > 0 && progress.every(t => t.complete);
+  if (allDone) {
+    document.getElementById('scrRace').classList.add('hidden');
+    document.getElementById('scrDone').classList.add('show');
+    document.getElementById('convergeBanner').classList.remove('show');
+  }
+}
+
+// ==================== RACE TRACKER ====================
+function renderRace(progress) {
+  const container = document.getElementById('raceTracker');
+
+  progress.sort((a, b) => {
+    const na = parseInt(a.teamName.replace('Group ', ''));
+    const nb = parseInt(b.teamName.replace('Group ', ''));
+    return na - nb;
+  });
+
+  let html = '';
+  for (const team of progress) {
+    const stage = team.stage || 0;
+    const complete = team.complete;
+
+    let pips = '';
+    for (let s = 1; s <= 5; s++) {
+      let cls = 'race-pip';
+      if (complete || s < stage) cls += ' done';
+      else if (s === stage) cls += ' active';
+      pips += `<div class="${cls}"></div>`;
+    }
+
+    html += `
+      <div class="race-row">
+        <div class="race-label">${team.teamName}</div>
+        <div class="race-pips">${pips}</div>
+        <div class="race-check">${complete ? '✅' : ''}</div>
+      </div>
+    `;
+  }
+
+  container.innerHTML = html;
+}
+
+// ==================== REVEAL ====================
+function handleReveal(step) {
+  const revealScreen = document.getElementById('scrReveal');
+  const doneScreen = document.getElementById('scrDone');
+  const raceScreen = document.getElementById('scrRace');
+  const waitScreen = document.getElementById('scrWaiting');
+
+  if (step === 0) {
+    revealScreen.classList.remove('show');
+    document.getElementById('revStep1').classList.remove('show');
+    document.getElementById('revStep2').classList.remove('show');
+    document.getElementById('revStep3').classList.remove('show');
+    document.getElementById('revStep4').classList.remove('show');
+    return;
+  }
+
+  waitScreen.classList.add('hidden');
+  raceScreen.classList.add('hidden');
+  doneScreen.classList.remove('show');
+  document.getElementById('convergeBanner').classList.remove('show');
+  revealScreen.classList.add('show');
+
+  document.getElementById('revStep1').classList.toggle('show', step >= 1);
+  document.getElementById('revStep2').classList.toggle('show', step >= 2);
+  document.getElementById('revStep3').classList.toggle('show', step >= 3);
+  document.getElementById('revStep4').classList.toggle('show', step >= 4);
+
+  if (step >= 4) renderProjectorStats();
+}
+
+// Demo reveal support
+function demoReveal(step) {
+  currentRevealStep = step;
+  
+  const revealScreen = document.getElementById('scrReveal');
+  const doneScreen = document.getElementById('scrDone');
+
+  if (step === 0) {
+    revealScreen.classList.remove('show');
+    document.getElementById('revStep1').classList.remove('show');
+    document.getElementById('revStep2').classList.remove('show');
+    document.getElementById('revStep3').classList.remove('show');
+    document.getElementById('revStep4').classList.remove('show');
+    doneScreen.classList.add('show');
+    return;
+  }
+
+  doneScreen.classList.remove('show');
+  revealScreen.classList.add('show');
+
+  document.getElementById('revStep1').classList.toggle('show', step >= 1);
+  document.getElementById('revStep2').classList.toggle('show', step >= 2);
+  document.getElementById('revStep3').classList.toggle('show', step >= 3);
+  document.getElementById('revStep4').classList.toggle('show', step >= 4);
+
+  if (step >= 4) renderProjectorStats();
+
+  // Move demo buttons to float over reveal
+  const btns = document.getElementById('demoRevealBtns');
+  if (btns) {
+    btns.style.position = 'fixed';
+    btns.style.bottom = '20px';
+    btns.style.left = '50%';
+    btns.style.transform = 'translateX(-50%)';
+    btns.style.zIndex = '300';
+    btns.style.background = 'rgba(8,8,16,.85)';
+    btns.style.padding = '12px 20px';
+    btns.style.borderRadius = '10px';
+    btns.style.border = '1px solid var(--border)';
+    document.body.appendChild(btns);
+  }
+}
+
+// ==================== PROJECTOR STATS ====================
+function renderProjectorStats() {
+  const STAGE_LABELS = ['Cause','Trigger','Event','Short-Term','Long-Term'];
+  let totalAll = 0, correctAll = 0;
+
+  for (let s = 1; s <= 5; s++) {
+    let total = 0, correct = 0;
+    ['A','B','C'].forEach(c => {
+      const key = c + '-' + s;
+      if (cachedStageStats[key]) {
+        total += cachedStageStats[key].total;
+        correct += cachedStageStats[key].correct;
+      }
+    });
+
+    totalAll += total;
+    correctAll += correct;
+
+    const pct = total > 0 ? Math.round((correct / total) * 100) : 0;
+    const card = document.getElementById('pStat' + s);
+    const pctEl = card.querySelector('.stats-pct');
+    const ratioEl = card.querySelector('.stats-ratio');
+
+    pctEl.textContent = total > 0 ? pct + '%' : '—';
+    pctEl.className = 'stats-pct' + (total === 0 ? ' none' : pct >= 70 ? ' good' : pct >= 40 ? ' mid' : ' bad');
+    ratioEl.textContent = total > 0 ? correct + ' / ' + total + ' correct' : '';
+  }
+
+  const overallEl = document.getElementById('projectorOverall');
+  if (totalAll > 0) {
+    const overallPct = Math.round((correctAll / totalAll) * 100);
+    overallEl.textContent = 'Overall: ' + overallPct + '% first-attempt accuracy (' + correctAll + '/' + totalAll + ')';
+  }
+}
+
+// ==================== CONVERGENCE ====================
+function checkConvergence(progress) {
+  const converged = progress.filter(t => t.stage >= 4 || t.complete).length;
+  const total = progress.length;
+  const banner = document.getElementById('convergeBanner');
+
+  if (converged >= 2 && converged < total) {
+    document.getElementById('convergeCount').textContent = converged + ' / ' + total;
+    banner.classList.add('show');
+  } else if (converged >= total) {
+    banner.classList.remove('show');
+  } else {
+    banner.classList.remove('show');
+  }
+
+  lastConvergeCount = converged;
+}
+
+// ==================== DEMO MODE ====================
+let demoMode = false;
+let demoTeams = [];
+let demoInterval = null;
+
+function runDemo() {
+  // If already in demo, reset and restart
+  if (demoInterval) { clearInterval(demoInterval); demoInterval = null; }
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+  demoMode = true;
+
+  // Reset done screen
+  document.getElementById('scrDone').classList.remove('show');
+
+  // Switch to race view
+  currentState = 'task1';
+  document.getElementById('scrWaiting').classList.add('hidden');
+  document.getElementById('scrRace').classList.remove('hidden');
+
+  // Start demo timer
+  timerEnd = Date.now() + 10 * 60 * 1000;
+  if (!timerInterval) {
+    timerInterval = setInterval(updateTimer, 500);
+    updateTimer();
+  }
+
+  // Create 15 fake teams
+  const cascades = [];
+  for (let i = 0; i < 15; i++) cascades.push(['A','B','C'][i % 3]);
+  for (let i = cascades.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [cascades[i], cascades[j]] = [cascades[j], cascades[i]];
+  }
+
+  demoTeams = [];
+  for (let i = 1; i <= 15; i++) {
+    demoTeams.push({
+      teamName: 'Group ' + i,
+      cascade: cascades[i-1],
+      stage: 1,
+      complete: false,
+      speed: 800 + Math.random() * 2500,
+      _elapsed: 0
+    });
+  }
+
+  demoInterval = setInterval(demoTick, 400);
+  demoRender();
+}
+
+function demoTick() {
+  let allDone = true;
+
+  for (const t of demoTeams) {
+    if (t.complete) continue;
+    allDone = false;
+
+    t._elapsed += 400;
+    if (t._elapsed < t.speed) continue;
+    t._elapsed = 0;
+
+    // Advance (simulate answering)
+    if (t.stage >= 5) {
+      t.complete = true;
+    } else {
+      t.stage++;
+    }
+  }
+
+  demoRender();
+
+  if (allDone) {
+    clearInterval(demoInterval);
+    demoInterval = null;
+    setTimeout(() => {
+      document.getElementById('scrRace').classList.add('hidden');
+      document.getElementById('convergeBanner').classList.remove('show');
+      document.getElementById('scrDone').classList.add('show');
+      document.getElementById('scrDone').innerHTML = `
+        <h2>✓ All Teams Finished</h2>
+        <p>Three roads. One destination. Stand by for the reveal…</p>
+        <div id="demoRevealBtns" style="margin-top:28px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+          <button onclick="demoReveal(1)" style="padding:10px 20px;background:var(--gold-dim);border:1px solid var(--gold);border-radius:6px;font-family:var(--font-head);font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);cursor:pointer">① Diseases</button>
+          <button onclick="demoReveal(2)" style="padding:10px 20px;background:var(--gold-dim);border:1px solid var(--gold);border-radius:6px;font-family:var(--font-head);font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);cursor:pointer">② Map</button>
+          <button onclick="demoReveal(3)" style="padding:10px 20px;background:var(--red-dim);border:1px solid var(--red);border-radius:6px;font-family:var(--font-head);font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:var(--red-bright);cursor:pointer">③ Insight</button>
+          <button onclick="demoReveal(4)" style="padding:10px 20px;background:var(--green-dim);border:1px solid var(--green);border-radius:6px;font-family:var(--font-head);font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:var(--green);cursor:pointer">④ Stats</button>
+          <button onclick="demoReveal(0)" style="padding:10px 20px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;font-family:var(--font-head);font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);cursor:pointer">Reset View</button>
+        </div>
+      `;
+
+      // Seed fake stats for demo
+      cachedStageStats = {
+        'A-1':{total:5,correct:4},'B-1':{total:5,correct:5},'C-1':{total:5,correct:4},
+        'A-2':{total:5,correct:3},'B-2':{total:5,correct:4},'C-2':{total:5,correct:3},
+        'A-3':{total:5,correct:3},'B-3':{total:5,correct:2},'C-3':{total:5,correct:3},
+        'A-4':{total:5,correct:2},'B-4':{total:5,correct:3},'C-4':{total:5,correct:2},
+        'A-5':{total:5,correct:4},'B-5':{total:5,correct:3},'C-5':{total:5,correct:3}
+      };
+    }, 1500);
+  }
+}
+
+function demoRender() {
+  const progress = demoTeams.map(t => ({
+    teamName: t.teamName,
+    cascade: t.cascade,
+    stage: t.complete ? 5 : t.stage,
+    complete: t.complete
+  }));
+
+  renderRace(progress);
+  checkConvergence(progress);
+}
+</script>
+</body>
+</html>
