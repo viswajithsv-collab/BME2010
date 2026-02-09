@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Studio 2 — I Can Do It With a Broken Heart</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+/* ===== RESET & VARIABLES ===== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080810;--bg-card:#0f0f1a;--bg-hover:#161624;--bg-input:#0b0b14;
+  --border:#1e1528;--border-hot:#5c1a2a;
+  --red:#c41e3a;--red-bright:#e8334f;--red-dim:#3d0f1a;
+  --gold:#c9a84c;--gold-dim:#6b5a2a;
+  --green:#34c769;--green-dim:#1a3d28;
+  --text:#e4dde0;--text2:#8a7e84;--text3:#4a4248;
+  --font-head:'Oswald',sans-serif;--font-body:'Lora',serif;
+}
+html{font-size:16px}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 60% 40% at 15% 80%,rgba(196,30,58,.07) 0%,transparent 70%),
+  radial-gradient(ellipse 50% 50% at 85% 15%,rgba(100,15,30,.05) 0%,transparent 60%)}
+.wrap{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:28px 24px 80px}
+
+/* ===== HEADER ===== */
+.hdr{text-align:center;padding:36px 0 28px;border-bottom:1px solid var(--border);margin-bottom:36px}
+.hdr-eye{font-family:var(--font-head);font-size:.7rem;font-weight:500;letter-spacing:.25em;text-transform:uppercase;color:var(--red);margin-bottom:10px}
+.hdr h1{font-family:var(--font-head);font-size:2.6rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;line-height:1.05}
+.hdr h1 span{color:var(--red-bright)}
+.hdr-sub{font-size:.92rem;color:var(--text2);font-style:italic;margin-top:8px}
+
+/* ===== REGISTRATION ===== */
+.reg{max-width:520px;margin:0 auto;text-align:center;padding:48px 0}
+.reg h2{font-family:var(--font-head);font-size:1.7rem;letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px}
+.reg p{color:var(--text2);font-size:.9rem;margin-bottom:24px}
+.group-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px}
+.group-btn{
+  padding:18px 0;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;
+  font-family:var(--font-head);font-size:1.4rem;font-weight:700;color:var(--text);
+  cursor:pointer;transition:all .2s;letter-spacing:.02em;
+}
+.group-btn:hover{border-color:var(--red);background:var(--bg-hover);color:var(--red-bright)}
+.group-btn:active{background:var(--red-dim);border-color:var(--red-bright)}
+.group-btn.picked{background:var(--red);border-color:var(--red-bright);color:#fff;cursor:default;pointer-events:none}
+.reg-err{color:var(--red-bright);font-size:.83rem;margin-top:10px;display:none}
+
+/* ===== BUTTONS ===== */
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:13px 32px;border:none;border-radius:6px;font-family:var(--font-head);font-size:.88rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:all .2s}
+.btn-go{background:var(--red);color:#fff}
+.btn-go:hover{background:var(--red-bright)}
+.btn-go:disabled{background:var(--red-dim);color:var(--text3);cursor:not-allowed}
+
+/* ===== WAITING ===== */
+.waiting{text-align:center;padding:64px 0}
+.waiting h2{font-family:var(--font-head);font-size:1.8rem;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px}
+.waiting p{color:var(--text2);font-size:.9rem}
+.team-badge{display:inline-block;margin-top:18px;padding:8px 20px;border:1px solid var(--border);border-radius:6px;font-family:var(--font-head);font-weight:600;font-size:.9rem;color:var(--text2);letter-spacing:.06em}
+.pulse{display:inline-block;width:7px;height:7px;background:var(--red);border-radius:50%;margin-right:6px;animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.3;transform:scale(1)}50%{opacity:1;transform:scale(1.4)}}
+
+/* ===== TEAM STRIP ===== */
+.team-strip{display:flex;align-items:center;justify-content:center;margin-bottom:32px}
+.team-name{font-family:var(--font-head);font-weight:600;color:var(--text2);font-size:.95rem;letter-spacing:.06em}
+
+/* ===== STAGE TRACKER ===== */
+.tracker{display:flex;gap:6px;margin-bottom:36px;padding:0 4px}
+.pip{flex:1;height:5px;border-radius:3px;background:var(--border);position:relative;transition:background .6s,box-shadow .6s}
+.pip.done{background:var(--green)}
+.pip.active{background:var(--red);box-shadow:0 0 12px rgba(196,30,58,.4)}
+.pip-lbl{position:absolute;top:12px;left:50%;transform:translateX(-50%);font-family:var(--font-head);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);white-space:nowrap}
+.pip.done .pip-lbl{color:var(--green)}
+.pip.active .pip-lbl{color:var(--red-bright);font-weight:600}
+
+/* ===== STAGE LABEL ===== */
+.stage-lbl{text-align:center;margin-bottom:24px}
+.stage-lbl .num{font-family:var(--font-head);font-size:.78rem;letter-spacing:.18em;text-transform:uppercase;color:var(--red);font-weight:500}
+.stage-lbl h2{font-family:var(--font-head);font-size:1.7rem;font-weight:600;letter-spacing:.02em;text-transform:uppercase;margin-top:2px}
+
+/* ===== CLUE ===== */
+.clue{background:var(--bg-card);border:1px solid var(--border);border-left:3px solid var(--red);border-radius:8px;padding:20px 24px;margin-bottom:24px;line-height:1.75;font-size:.94rem}
+.clue-tag{font-family:var(--font-head);font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--red);font-weight:600;margin-bottom:8px}
+
+/* ===== QUESTION & OPTIONS ===== */
+.q-text{font-size:1.02rem;font-weight:500;margin-bottom:18px;line-height:1.55}
+.opts{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+.opt{display:flex;align-items:flex-start;gap:14px;padding:14px 18px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:all .2s;font-size:.92rem;line-height:1.55;color:var(--text)}
+.opt:hover{border-color:var(--border-hot);background:var(--bg-hover)}
+.opt.selected{border-color:var(--red);background:rgba(196,30,58,.06)}
+.opt.correct{border-color:var(--green);background:rgba(52,199,105,.06);cursor:default}
+.opt.wrong{border-color:#b33;background:rgba(180,50,50,.06);opacity:.5;cursor:default}
+.opt.dimmed{opacity:.35;cursor:default;pointer-events:none}
+.opt .ltr{flex-shrink:0;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:5px;font-family:var(--font-head);font-weight:600;font-size:.8rem;color:var(--text2);transition:all .2s;margin-top:1px}
+.opt.selected .ltr{border-color:var(--red);color:var(--red-bright);background:rgba(196,30,58,.08)}
+.opt.correct .ltr{border-color:var(--green);color:var(--green);background:rgba(52,199,105,.08)}
+
+/* ===== FEEDBACK ===== */
+.fb{padding:16px 20px;border-radius:8px;margin-bottom:20px;font-size:.9rem;line-height:1.6;display:none}
+.fb.show{display:block;animation:fadeUp .3s ease}
+.fb.ok{background:rgba(52,199,105,.06);border:1px solid rgba(52,199,105,.25);color:#7edba0}
+.fb.bad{background:rgba(180,50,50,.06);border:1px solid rgba(180,50,50,.25);color:#d4a0a0}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ===== CONVERGENCE ===== */
+.convergence{text-align:center;padding:18px 24px;margin:8px 0 20px;border:1px solid var(--gold-dim);border-radius:8px;background:rgba(201,168,76,.04)}
+.convergence h3{font-family:var(--font-head);color:var(--gold);font-size:1.05rem;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
+.convergence p{color:var(--gold-dim);font-size:.82rem}
+
+/* ===== ACTIONS ===== */
+.actions{text-align:center;margin-top:8px}
+
+/* ===== REVEAL / DONE SCREEN ===== */
+.done-screen{text-align:center;padding:48px 0;display:none}
+.done-screen.show{display:block;animation:fadeUp .5s ease}
+.reveal-eyebrow{font-family:var(--font-head);font-size:.8rem;letter-spacing:.2em;text-transform:uppercase;color:var(--red);margin-bottom:10px;font-weight:500}
+.reveal-disease{font-family:var(--font-head);font-size:3rem;color:var(--text);text-transform:uppercase;letter-spacing:.03em;line-height:1.1;margin-bottom:28px}
+.reveal-pathway{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px 4px;margin-bottom:32px;padding:0 8px}
+.pw-node{font-family:var(--font-head);font-size:.82rem;font-weight:500;letter-spacing:.04em;text-transform:uppercase;padding:6px 14px;border:1px solid var(--border);border-radius:5px;color:var(--text2);background:var(--bg-card)}
+.pw-node.pw-end{border-color:var(--red);color:var(--red-bright);background:var(--red-dim);font-weight:700}
+.pw-arrow{color:var(--text3);font-size:.9rem;margin:0 2px}
+.reveal-summary{max-width:580px;margin:0 auto 16px;color:var(--text2);font-size:.93rem;line-height:1.7}
+.reveal-summary em{color:var(--text);font-style:italic}
+.reveal-kicker{color:var(--text3);font-size:.88rem;font-style:italic}
+.waiting-msg{color:var(--text3);font-size:.82rem;margin-top:28px}
+
+/* ===== FROZEN OVERLAY ===== */
+.frozen{display:none;position:fixed;inset:0;background:rgba(8,8,16,.92);z-index:200;align-items:center;justify-content:center;text-align:center}
+.frozen.show{display:flex}
+.frozen h2{font-family:var(--font-head);font-size:2.5rem;color:var(--text2);letter-spacing:.1em;text-transform:uppercase}
+.frozen p{color:var(--text3);margin-top:8px}
+
+/* ===== TIMER ===== */
+.timer-bar{position:fixed;top:0;left:0;right:0;height:4px;background:var(--bg);z-index:50}
+.timer-fill{height:100%;background:linear-gradient(90deg,var(--red),var(--red-bright));width:100%;transition:width 1s linear}
+.timer-display{position:fixed;top:8px;right:16px;z-index:51;font-family:var(--font-head);font-size:1.1rem;letter-spacing:.08em;color:var(--text3)}
+.timer-display.urgent{color:var(--red-bright);animation:timerPulse 1s infinite}
+@keyframes timerPulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ===== UTILITIES ===== */
+.hidden{display:none!important}
+@media(max-width:600px){.wrap{padding:16px 14px 60px}.hdr h1{font-size:2rem}.clue{padding:16px}.reg-row{flex-direction:column}}
+</style>
+</head>
+<body>
+
+<!-- TIMER -->
+<div class="timer-bar"><div class="timer-fill" id="timerFill"></div></div>
+<div class="timer-display hidden" id="timerDisplay">--:--</div>
+
+<!-- FROZEN OVERLAY -->
+<div class="frozen" id="frozenOverlay"><div><h2>⏸ Paused</h2><p>Waiting for the instructor…</p></div></div>
+
+<div class="wrap">
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="hdr-eye">BME 2010 · Studio 2</div>
+    <h1>I Can Do It With a <span>Broken Heart</span></h1>
+    <div class="hdr-sub">Engineering a Buddy for an Ailing Ventricle</div>
+  </div>
+
+  <!-- SCREEN: REGISTRATION -->
+  <div id="scrReg" class="reg">
+    <h2>Select Your Group</h2>
+    <p>Everyone at the same table picks the same number.</p>
+    <div class="group-grid" id="groupGrid">
+      <button class="group-btn" onclick="joinGroup(1)">1</button>
+      <button class="group-btn" onclick="joinGroup(2)">2</button>
+      <button class="group-btn" onclick="joinGroup(3)">3</button>
+      <button class="group-btn" onclick="joinGroup(4)">4</button>
+      <button class="group-btn" onclick="joinGroup(5)">5</button>
+      <button class="group-btn" onclick="joinGroup(6)">6</button>
+      <button class="group-btn" onclick="joinGroup(7)">7</button>
+      <button class="group-btn" onclick="joinGroup(8)">8</button>
+      <button class="group-btn" onclick="joinGroup(9)">9</button>
+      <button class="group-btn" onclick="joinGroup(10)">10</button>
+      <button class="group-btn" onclick="joinGroup(11)">11</button>
+      <button class="group-btn" onclick="joinGroup(12)">12</button>
+      <button class="group-btn" onclick="joinGroup(13)">13</button>
+      <button class="group-btn" onclick="joinGroup(14)">14</button>
+      <button class="group-btn" onclick="joinGroup(15)">15</button>
+    </div>
+    <div class="reg-err" id="regErr"></div>
+  </div>
+
+  <!-- SCREEN: WAITING -->
+  <div id="scrWait" class="waiting hidden">
+    <h2><span class="pulse"></span> Waiting for Game to Start</h2>
+    <p>Your instructor will launch Bad Blood shortly.</p>
+    <div class="team-badge" id="waitBadge"></div>
+  </div>
+
+  <!-- SCREEN: TASK 1 GAME -->
+  <div id="scrGame" class="hidden">
+    <div class="team-strip"><span class="team-name" id="gameTeamName"></span></div>
+    <div class="tracker" id="tracker"></div>
+    <div id="questionArea"></div>
+  </div>
+
+  <!-- SCREEN: TASK 1 COMPLETE -->
+  <div class="done-screen" id="scrDone">
+    <div class="reveal-eyebrow">Your pathway was</div>
+    <h2 class="reveal-disease" id="revealDisease"></h2>
+    <div class="reveal-pathway" id="revealPathway"></div>
+    <div class="reveal-summary" id="revealSummary"></div>
+    <p class="reveal-kicker">Three roads. One destination. Look around — every team ended up here.</p>
+    <div class="waiting-msg"><span class="pulse"></span> Waiting for all teams to finish…</div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// CONFIGURATION
+// ============================================================
+const BACKEND = 'https://script.google.com/macros/s/AKfycbx_pEtSHZpfoCO--fsUljx04B7Hl8bYN4btYs_8Y_8jVrNckUu8KY1pIOIada5F_P52/exec';
+const POLL_MS = 2500;
+
+// ============================================================
+// DATA: MCQ BANK (45 questions)
+// ============================================================
+const MCQ = {
+// --- CASCADE A: ISCHEMIC ---
+'A1-Q1':{s:1,l:'Cause',clue:`The pipes that feed the engine are slowly clogging. The engine doesn't know it yet — it still runs fine most days. But the delivery system is failing, and one day the fuel just won't arrive in time.`,q:`What underlying condition is being described?`,o:[{ltr:'A',text:`Chronic high blood pressure gradually increasing the heart's workload`},{ltr:'B',text:`A genetic defect that weakens the heart muscle fibers from birth`},{ltr:'C',text:`Progressive plaque buildup narrowing the coronary arteries`,c:1},{ltr:'D',text:`A viral infection directly attacking the heart muscle`}],fb:`Coronary artery disease. The supply lines are failing, not the engine itself. This slow clog sets the stage for everything that follows.`},
+'A1-Q2':{s:1,l:'Cause',clue:`Think of a highway with lanes closing one by one over years. Traffic still flows — just slower. The drivers don't notice until one day there's a full shutdown and nothing gets through.`,q:`What condition does this highway analogy represent?`,o:[{ltr:'A',text:`A narrowed aortic valve restricting blood flow out of the left ventricle`},{ltr:'B',text:`High pressure in the lung circulation straining the right side of the heart`},{ltr:'C',text:`Coronary artery disease progressively reducing blood supply to the heart muscle`,c:1},{ltr:'D',text:`A leaky heart valve allowing blood to flow backward`}],fb:`Coronary artery disease — progressive narrowing of the supply lines to the heart muscle itself.`},
+'A1-Q3':{s:1,l:'Cause',clue:`A factory depends on a single supply road. Over decades, debris accumulates in the road — cholesterol, calcium, inflammatory cells — building up in the walls. The factory keeps running because it only needs 30% of the road open. But the margin of safety is shrinking every year.`,q:`What is the "supply road" in this analogy, and what is happening to it?`,o:[{ltr:'A',text:`The aorta is stiffening with age, making it harder to pump blood out`},{ltr:'B',text:`The small arteries in the legs are narrowing from diabetes`},{ltr:'C',text:`The veins returning blood to the heart are becoming congested`},{ltr:'D',text:`The coronary arteries are developing atherosclerotic plaque`,c:1}],fb:`Atherosclerotic plaque in the coronary arteries. The factory (heart) can run on a partially blocked road — until it can't.`},
+'A2-Q1':{s:2,l:'Trigger',clue:`The slow clog finally wins. A chunk breaks free, a pipe shuts down completely, and an entire section of the engine goes dark — starved of what it needs. The damage is done in minutes.`,q:`What acute event has just occurred?`,o:[{ltr:'A',text:`A tear in the wall of the aorta`},{ltr:'B',text:`An episode of irregular heartbeat causing the heart to quiver instead of pump`},{ltr:'C',text:`A heart attack — a coronary artery has become completely blocked`,c:1},{ltr:'D',text:`A blood clot in the lungs blocking oxygen exchange`}],fb:`Myocardial infarction — the chronic CAD finally causes a complete blockage. Heart tissue begins dying within minutes.`},
+'A2-Q2':{s:2,l:'Trigger',clue:`For years the road was narrowing. Today, a piece of the wall crumbles into the lane. A clot forms instantly, sealing the road shut. The tissue downstream — the part of the heart that depended on that artery — begins to die within 20 minutes.`,q:`What is this event called?`,o:[{ltr:'A',text:`Angina — temporary chest pain from reduced blood flow that resolves on its own`},{ltr:'B',text:`Cardiac arrest — the heart suddenly stops beating entirely`},{ltr:'C',text:`Myocardial infarction — death of heart tissue from complete blockage of a coronary artery`,c:1},{ltr:'D',text:`Heart failure — the heart gradually loses pumping ability over months`}],fb:`Myocardial infarction. Not angina (temporary), not cardiac arrest (total stoppage). This is tissue death from supply cutoff.`},
+'A2-Q3':{s:2,l:'Trigger',clue:`Imagine a city with one bridge to an island. The bridge has been deteriorating for years. Today, a section collapses. Everything on the island — stores, hospitals, homes — is cut off. Some structures will survive on reserves for an hour. Others won't make it.`,q:`In cardiovascular terms, what has happened?`,o:[{ltr:'A',text:`The sac around the heart has filled with fluid, compressing it from outside`},{ltr:'B',text:`A coronary artery has become completely blocked, cutting off blood supply to a region of heart muscle`,c:1},{ltr:'C',text:`The heart's electrical system has short-circuited, causing it to stop`},{ltr:'D',text:`A heart valve has torn, causing blood to leak backward with each beat`}],fb:`Complete coronary occlusion. The bridge (artery) collapses, the island (myocardial territory) is cut off.`},
+'A3-Q1':{s:3,l:'Event',clue:`The section that went dark doesn't come back. It turns to scar tissue — dead weight that can't contract. The rest of the heart tries to compensate, but it's now doing a full job with only part of the crew. The chamber stretches to try to keep up. It's getting bigger, but weaker.`,q:`What structural change is the heart undergoing?`,o:[{ltr:'A',text:`The damaged ventricle is scarring, stretching, and losing its ability to pump effectively`,c:1},{ltr:'B',text:`The walls are getting thicker and stronger to handle more pressure`},{ltr:'C',text:`Fluid is accumulating in the sac around the heart, squeezing it`},{ltr:'D',text:`The heart valves are hardening and narrowing`}],fb:`Ventricular remodeling. Scar tissue replaces dead muscle, the chamber dilates, and EF drops. This is ischemic cardiomyopathy.`},
+'A3-Q2':{s:3,l:'Event',clue:`A team of 10 workers loses 3 permanently. Cardiac muscle doesn't regenerate — there are no replacements. The remaining 7 stretch further with each cycle to maintain output. Using the Frank-Starling mechanism, more stretch means more force — for a while. But eventually the muscle is so overstretched that further filling actually decreases output. The curve flattens.`,q:`What is happening to the heart's pumping performance?`,o:[{ltr:'A',text:`The heart is beating faster to compensate, which is maintaining output perfectly`},{ltr:'B',text:`The right ventricle is taking over the work of the left ventricle`},{ltr:'C',text:`The surviving muscle is overstretching beyond the effective range of the Frank-Starling curve, and output is declining`,c:1},{ltr:'D',text:`The heart is shrinking because dead tissue is being reabsorbed`}],fb:`The Frank-Starling curve has plateaued. More stretch no longer means more force — the remaining muscle has exceeded its effective operating range.`},
+'A3-Q3':{s:3,l:'Event',clue:`After the heart attack, the damaged area is replaced by stiff scar tissue. The remaining healthy muscle works harder, but the left ventricle has dilated — stretched out like an overinflated balloon. The ejection fraction drops from 60% to 30%. The heart is still beating, but it's ejecting less than half the blood it should with each beat.`,q:`What does an ejection fraction of 30% tell you about this heart?`,o:[{ltr:'A',text:`The heart has severely reduced systolic function — it's ejecting far less blood per beat than a healthy heart`,c:1},{ltr:'B',text:`The heart is pumping normally — 30% is within the healthy range`},{ltr:'C',text:`The heart rate is 30% of normal, which means the heart is beating too slowly`},{ltr:'D',text:`The heart is filling too slowly — this is a diastolic problem, not a systolic one`}],fb:`EF of 30% = severely reduced systolic function. Normal is 55-70%. This heart is ejecting less than half of what it should per beat.`},
+'A4-Q1':{s:4,l:'Short-Term Consequence',cv:1,clue:`The baroreceptors in the aorta and carotid arteries detect the drop in blood pressure. They send an alarm to the brain: 'Output is falling!' The sympathetic nervous system kicks in — fight-or-flight mode. Heart rate goes up. Blood vessels tighten to maintain pressure. The kidneys hold onto salt and water to increase blood volume. For now, blood pressure stabilizes. But the failing heart is now being asked to pump faster against tighter vessels with more fluid — exactly what it can't handle.`,q:`What has the body activated in response to the drop in cardiac output?`,o:[{ltr:'A',text:`The sympathetic nervous system — increasing heart rate, constricting blood vessels, and retaining fluid to maintain blood pressure`,c:1},{ltr:'B',text:`The immune system — sending white blood cells to repair the damaged heart muscle`},{ltr:'C',text:`The parasympathetic nervous system — slowing the heart to conserve energy`},{ltr:'D',text:`The clotting system — forming clots to seal off the damaged area of the heart`}],fb:`Sympathetic compensation. HR up, vasoconstriction, fluid retention. This is the same response regardless of which pathway got you here.`},
+'A4-Q2':{s:4,l:'Short-Term Consequence',cv:1,clue:`The thermostat in a house breaks, so the heat runs nonstop. At first, the house stays warm — problem solved. But the energy bill skyrockets, the pipes overheat, and eventually the furnace burns out from running 24/7. The body's 'thermostat' is the baroreflex. When it detects low cardiac output, it turns on the sympathetic response — and in heart failure, it never turns off.`,q:`Why is a constantly active sympathetic response harmful to a failing heart?`,o:[{ltr:'A',text:`Because it causes the coronary arteries to develop new blockages`},{ltr:'B',text:`Because sympathetic activation causes the heart to stop beating`},{ltr:'C',text:`Because it directly destroys heart muscle cells through inflammation`},{ltr:'D',text:`Because it forces the heart to beat faster and pump against tighter vessels — increasing the workload on a heart that is already failing`,c:1}],fb:`The sympathetic system never turns off — like a furnace running 24/7. The failing heart is asked to work harder and harder, accelerating its own destruction.`},
+'A4-Q3':{s:4,l:'Short-Term Consequence',cv:1,clue:`Three emergency responses fire at once: (1) Heart rate increases to try to maintain cardiac output (remember: CO = HR × SV — if SV drops, the body raises HR). (2) Blood vessels constrict to keep blood pressure up (higher resistance = higher pressure). (3) The kidneys retain salt and water to increase blood volume (more volume = more preload = more stretch = more force via Frank-Starling — in theory). Each one makes sense individually. Together, they're drowning a weakened heart in extra work.`,q:`Using the equation CO = HR × SV, why does increasing heart rate alone NOT fix the problem?`,o:[{ltr:'A',text:`Because heart rate has no relationship to cardiac output`},{ltr:'B',text:`Because the failing ventricle can't increase its stroke volume to match — and at very high heart rates, there's less time to fill between beats, so SV actually drops further`,c:1},{ltr:'C',text:`Because increasing HR causes the blood pressure to drop to zero`},{ltr:'D',text:`Because increasing HR always increases SV proportionally`}],fb:`HR goes up, but SV can't keep up — and at fast rates, filling time drops, so SV falls further. The math doesn't save you when the pump is broken.`},
+'A5-Q1':{s:5,l:'Long-Term Consequence',cv:1,clue:`The compensatory responses became permanent. The heart has been running at elevated heart rate for months — it's exhausted. The extra fluid is backing up into the lungs (the patient can't breathe lying down). The kidneys are struggling because cardiac output is too low to perfuse them properly. Medications have been maxed out — ACE inhibitors, beta-blockers, diuretics — and they're no longer enough. The biological pump has failed beyond what drugs can fix.`,q:`What stage has this patient reached, and what kind of intervention is needed?`,o:[{ltr:'A',text:`Acute cardiac arrest — the patient needs CPR and defibrillation`},{ltr:'B',text:`End-stage heart failure (Stage D) — the patient needs mechanical pump support such as an LVAD`,c:1},{ltr:'C',text:`NYHA Class II — this can be managed by adjusting medications`},{ltr:'D',text:`Mild heart failure — the patient just needs to exercise more and reduce salt`}],fb:`Stage D, NYHA Class IV. Medications exhausted. The biological pump has reached its limit. Time to engineer a mechanical buddy.`},
+'A5-Q2':{s:5,l:'Long-Term Consequence',cv:1,clue:`Every treatment has been tried. ACE inhibitors to reduce the workload on the heart. Beta-blockers to slow the heart rate and reduce oxygen demand. Diuretics to remove the excess fluid. The patient is still breathless at rest, hospitalized repeatedly, and their organs are starting to fail from inadequate blood flow. The heart's job is mechanical — generate pressure and flow. When it can't, the solution must be mechanical too.`,q:`What is the mechanical solution for a heart that can no longer pump enough blood?`,o:[{ltr:'A',text:`A pacemaker to regulate the heart's electrical rhythm`},{ltr:'B',text:`A stent to open up blocked coronary arteries`},{ltr:'C',text:`A left ventricular assist device (LVAD) that mechanically pumps blood alongside the failing heart`,c:1},{ltr:'D',text:`A defibrillator to shock the heart back into rhythm`}],fb:`The LVAD — a mechanical pump that works alongside the failing heart. The heart's job is mechanical. When it fails, the solution is mechanical.`},
+'A5-Q3':{s:5,l:'Long-Term Consequence',cv:1,clue:`Three roads. One destination. Whether the heart was destroyed by clogged supply lines, a defective muscle, or relentless pressure — it ends the same way. The ventricle is dilated, barely squeezing, drowning the lungs, starving the kidneys. Stage D. NYHA Class IV. Medications exhausted. The biological pump has reached its limit.`,q:`What do all three pathways to heart failure have in common at their endpoint?`,o:[{ltr:'A',text:`They all respond to the same medication if the dose is high enough`},{ltr:'B',text:`They all converge on a failing ventricle that needs mechanical pump support to sustain life`,c:1},{ltr:'C',text:`They all require surgery to fix the coronary arteries`},{ltr:'D',text:`They all cause the same type of irregular heart rhythm`}],fb:`Three roads. One destination. Different failure modes produce the same system-level failure — and the same engineering solution.`},
+// --- CASCADE B: NONISCHEMIC DCM ---
+'B1-Q1':{s:1,l:'Cause',clue:`The engine itself is defective. Not the fuel lines, not the electrical system — the muscle. It could be a genetic flaw in the muscle fibers. It could be a virus that quietly damaged the cells. It could be years of a toxin (like alcohol) poisoning the machinery. Whatever the cause, the muscle is weak from the start.`,q:`What category of heart disease is being described?`,o:[{ltr:'A',text:`High blood pressure disease from years of elevated pressure`},{ltr:'B',text:`Dilated cardiomyopathy — the heart muscle itself is inherently weak`,c:1},{ltr:'C',text:`Coronary artery disease caused by blocked blood supply to the heart`},{ltr:'D',text:`Heart valve disease caused by damaged or deformed valves`}],fb:`Dilated cardiomyopathy. The muscle itself is the problem — not the supply lines, not the pressure, not the valves.`},
+'B1-Q2':{s:1,l:'Cause',clue:`A car rolls off the assembly line with a defective engine block. It drives fine for years at low speeds — city commutes, easy trips. But the defect is there, hiding, waiting for the day the driver tries to merge onto a highway at full speed.`,q:`What does the "defective engine block" represent?`,o:[{ltr:'A',text:`An abnormally thick heart wall that blocks the outflow tract`},{ltr:'B',text:`A heart muscle that is inherently weak — dilated cardiomyopathy from genetic, viral, or toxic causes`,c:1},{ltr:'C',text:`A stiff aortic valve that restricts blood flow out of the heart`},{ltr:'D',text:`A hole between the heart's chambers allowing blood to mix`}],fb:`The engine block is the heart muscle itself — inherently weak from the factory. It works at low demand but has no reserve.`},
+'B1-Q3':{s:1,l:'Cause',clue:`No blockages on the imaging. No valve problems. Blood pressure is normal. But the ejection fraction is 25%, and the ventricle is stretched out like a water balloon. The muscle itself — for reasons that might be genetic, inflammatory, or toxic — simply cannot generate enough force.`,q:`What diagnosis fits this presentation?`,o:[{ltr:'A',text:`Dilated cardiomyopathy — a weak, enlarged ventricle with no coronary or valve cause`,c:1},{ltr:'B',text:`Coronary artery disease causing reduced blood supply to the heart`},{ltr:'C',text:`A stiff sac around the heart preventing it from expanding to fill`},{ltr:'D',text:`High pressure in the lung circulation pushing back on the right side of the heart`}],fb:`Dilated cardiomyopathy. No blockages, no valve disease, normal BP — just a weak, stretched-out muscle.`},
+'B2-Q1':{s:2,l:'Trigger',clue:`The engine has been running at 60% capacity for years without symptoms. Then something changes. A severe flu. A pregnancy. A new stressor that demands more output. The extra demand pushes the engine past what its weakened muscle can deliver. The crash isn't caused by a new disease — it's the old weakness meeting a new load.`,q:`What role does the stressor play in this cascade?`,o:[{ltr:'A',text:`It creates brand new damage to the heart that didn't exist before`},{ltr:'B',text:`It pushes the already weakened heart beyond its limited reserve, triggering failure`,c:1},{ltr:'C',text:`It causes a coronary artery to suddenly become blocked`},{ltr:'D',text:`It destroys the heart's electrical wiring, causing it to stop`}],fb:`The stressor didn't break anything new — it exposed what was already broken. Old weakness + new demand = decompensation.`},
+'B2-Q2':{s:2,l:'Trigger',clue:`A bridge rated for 10-ton trucks has been quietly downgraded to 6-ton capacity by hidden structural weakness. For years, only 4-ton trucks cross it. Then one day, an 8-ton truck shows up — a pregnancy, a fever, or a sustained fast heart rhythm. The bridge doesn't fail from a new crack. It fails because the old weakness was finally tested.`,q:`What is the "8-ton truck" in this analogy?`,o:[{ltr:'A',text:`A new blockage forming in a coronary artery`},{ltr:'B',text:`A sudden tear in the heart wall`},{ltr:'C',text:`A medication that accidentally poisons the heart`},{ltr:'D',text:`A physiological stressor that overwhelms the heart's reduced capacity`,c:1}],fb:`The 8-ton truck is any physiological stressor — illness, pregnancy, sustained tachycardia — that exceeds the heart's diminished reserve.`},
+'B2-Q3':{s:2,l:'Trigger',clue:`The patient has lived with low EF for 3 years — stable on medications, managing okay. Then she gets pneumonia. Her heart rate stays at 120 bpm for a week. Oxygen demand goes up. Using CO = HR × SV: even though HR is high, her SV is so low that CO can't meet the body's needs. She arrives in the ER unable to breathe, with fluid backing up into her lungs.`,q:`What best describes what happened?`,o:[{ltr:'A',text:`An acute illness exceeded her limited cardiac reserve, causing her stable heart failure to decompensate`,c:1},{ltr:'B',text:`She had a heart attack from a blocked coronary artery`},{ltr:'C',text:`Her heart valves suddenly failed from an infection`},{ltr:'D',text:`Her lungs developed their own separate disease unrelated to her heart`}],fb:`Decompensation. She was stable but had no reserve. Pneumonia pushed her past the tipping point.`},
+'B3-Q1':{s:3,l:'Event',clue:`The weakened heart that had been holding on — barely — now gives out under the new load. EF drops from 30% to 15%. Blood backs up into the lungs (the patient can't breathe). Cardiac output drops so low the kidneys can't filter properly and the patient becomes confused from poor brain perfusion.`,q:`What is happening clinically?`,o:[{ltr:'A',text:`A new heart attack is destroying more heart tissue`},{ltr:'B',text:`A blood pressure spike is causing organ damage from too much pressure`},{ltr:'C',text:`An infection of the heart lining is spreading to other organs`},{ltr:'D',text:`The already weak heart has decompensated — it can no longer maintain adequate cardiac output`,c:1}],fb:`Acute decompensated heart failure. The weak heart has crossed the threshold — EF crashes, organs start failing.`},
+'B3-Q2':{s:3,l:'Event',clue:`Think of a dam holding back a lake. The dam was already cracked (the weak muscle). A heavy rain (the stressor) raises the water level past the critical point. The dam doesn't explode — it just starts overflowing everywhere. Water floods downstream (the lungs fill with fluid), upstream (the veins become congested), and the dam itself (the ventricle) stretches further under the pressure.`,q:`What is the "overflow" event in heart failure terms?`,o:[{ltr:'A',text:`The heart has ruptured and blood is leaking into the chest`},{ltr:'B',text:`Acute decompensated heart failure — the weak heart is overwhelmed, causing fluid to back up into the lungs and veins`,c:1},{ltr:'C',text:`A blood clot has suddenly blocked the main artery to the lungs`},{ltr:'D',text:`The aorta has torn and blood is leaking into the abdomen`}],fb:`The dam overflows — not a rupture, but a gradual overwhelm. Fluid backs up everywhere. That's decompensation.`},
+'B3-Q3':{s:3,l:'Event',clue:`The patient's heart failure was 'compensated' — meaning the Frank-Starling mechanism and medications kept output adequate. Now they're 'decompensated.' On the Frank-Starling curve, the heart has moved past the peak — the ventricle is so stretched that more filling no longer produces more output. The curve has flattened.`,q:`What does it mean that the heart is on the "flat" part of the Frank-Starling curve?`,o:[{ltr:'A',text:`The blood has become too thick to flow through the heart efficiently`},{ltr:'B',text:`The heart valves have stiffened and can no longer open fully`},{ltr:'C',text:`The heart is beating at its maximum rate and can't go faster`},{ltr:'D',text:`The ventricle is so overstretched that additional filling no longer improves output — the muscle has exceeded its effective operating range`,c:1}],fb:`Past the peak of the Frank-Starling curve. More volume in = more congestion out, but NOT more stroke volume.`},
+'B4-Q1':{s:4,l:'Short-Term Consequence',cv:1,clue:`The body doesn't know WHY cardiac output dropped — it just detects it through the baroreceptors. Low pressure in the aorta and carotid arteries triggers the same response regardless of cause: the sympathetic nervous system activates. Heart rate goes up. Blood vessels tighten. The kidneys hold onto fluid.`,q:`What is the body's emergency response to low cardiac output?`,o:[{ltr:'A',text:`The parasympathetic system slows the heart to conserve energy`},{ltr:'B',text:`The clotting system activates to prevent blood loss`},{ltr:'C',text:`The immune system sends repair cells to rebuild damaged heart tissue`},{ltr:'D',text:`The sympathetic nervous system increases heart rate, constricts blood vessels, and causes fluid retention to try to maintain blood pressure`,c:1}],fb:`Sympathetic activation — identical response regardless of cause. The baroreflex doesn't diagnose, it just responds to low output.`},
+'B4-Q2':{s:4,l:'Short-Term Consequence',cv:1,clue:`Two patients in the hospital. Patient A had a heart attack (blocked artery). Patient B has dilated cardiomyopathy (weak muscle). Different causes. But both show the same signs: fast heart rate, cold and clammy extremities (from vasoconstriction), decreased urine output (kidneys retaining fluid). The baroreflex doesn't diagnose — it just responds to low output.`,q:`Why do both patients show the same compensatory pattern despite different diseases?`,o:[{ltr:'A',text:`Because both conditions always occur together`},{ltr:'B',text:`Because both patients have the same genetic background`},{ltr:'C',text:`Because the baroreflex responds to low cardiac output regardless of the underlying cause — the same sensors trigger the same sympathetic response`,c:1},{ltr:'D',text:`Because they're both receiving the same medications`}],fb:`The baroreflex is cause-blind. It detects low output and fires the same playbook every time.`},
+'B4-Q3':{s:4,l:'Short-Term Consequence',cv:1,clue:`Imagine two buildings on fire — one from electrical wiring, one from a kitchen accident. Different causes. But the fire department runs the same playbook: sirens blare (heart rate goes up), roads are blocked (blood vessels constrict), and hoses flood the area (kidneys retain fluid). But if the fire keeps burning, the water from the hoses eventually causes its own damage.`,q:`Using the Frank-Starling concept, why does fluid retention eventually make things worse?`,o:[{ltr:'A',text:`Because extra fluid causes the blood to become too thin to carry oxygen`},{ltr:'B',text:`Because fluid retention causes the coronary arteries to become blocked`},{ltr:'C',text:`Because the kidneys will shut down completely if they retain any fluid at all`},{ltr:'D',text:`Because the extra volume pushes the overstretched ventricle further past the peak of its Frank-Starling curve, worsening output while increasing lung congestion`,c:1}],fb:`The fire department's own water causes flooding. Extra volume pushes the ventricle further past its Frank-Starling peak.`},
+'B5-Q1':{s:5,l:'Long-Term Consequence',cv:1,clue:`The cardiomyopathy has progressed despite every available medication. Beta-blockers. ACE inhibitors. Diuretics. All optimized, all maxed out. EF is 12%. The patient can't walk to the bathroom without stopping to breathe. The biological pump has failed.`,q:`What intervention does this patient need?`,o:[{ltr:'A',text:`Mechanical circulatory support — an LVAD — because drug therapy has been exhausted`,c:1},{ltr:'B',text:`A higher dose of the current medications`},{ltr:'C',text:`Surgery to bypass blocked coronary arteries`},{ltr:'D',text:`A procedure to fix an irregular heart rhythm`}],fb:`LVAD. Medications exhausted, EF 12%, symptomatic at rest. The biological pump is done.`},
+'B5-Q2':{s:5,l:'Long-Term Consequence',cv:1,clue:`It doesn't matter how the heart got here. Blocked supply. Weak muscle. Excessive pressure. At Stage D, they all look the same: a dilated, floppy ventricle with an EF in the teens, unable to maintain output. The engineering problem is identical — and so is the engineering solution.`,q:`What is the common engineering problem and solution across all three pathways?`,o:[{ltr:'A',text:`All have a failing mechanical pump (the ventricle) that needs to be augmented by a mechanical device (LVAD)`,c:1},{ltr:'B',text:`All can be cured by a single universal medication`},{ltr:'C',text:`All need new coronary stents to restore blood flow`},{ltr:'D',text:`All develop the same genetic mutation over time`}],fb:`Different failure modes → same system-level failure → same engineering solution.`},
+'B5-Q3':{s:5,l:'Long-Term Consequence',cv:1,clue:`The patient is inotrope-dependent — meaning their heart literally cannot pump without a continuous IV medication drip stimulating each contraction. Remove the drip, and cardiac output collapses. This isn't treatment. This is life support for a broken pump.`,q:`Why is an LVAD appropriate here rather than continuing the IV medications indefinitely?`,o:[{ltr:'A',text:`Because the heart's mechanical pumping function has failed beyond what any drug can restore — only a mechanical pump can take over that job`,c:1},{ltr:'B',text:`Because the IV medications are too expensive to continue`},{ltr:'C',text:`Because the IV medications are damaging the patient's liver`},{ltr:'D',text:`Because the patient has become addicted to the IV medications`}],fb:`The heart's job is mechanical. When drugs can't make it pump, the solution must be mechanical. That's the LVAD.`},
+// --- CASCADE C: HYPERTENSIVE ---
+'C1-Q1':{s:1,l:'Cause',clue:`The engine is fine. The fuel lines are clean. But someone has been stepping on the brakes while the engine is trying to drive. For years, the blood vessels have been too tight, the resistance too high. The heart has to push harder with every single beat just to get blood out the door.`,q:`What condition is forcing the heart to work too hard?`,o:[{ltr:'A',text:`Coronary artery disease blocking blood flow TO the heart`},{ltr:'B',text:`Chronic high blood pressure — the heart must constantly push against elevated resistance`,c:1},{ltr:'C',text:`Anemia reducing the oxygen carried by the blood`},{ltr:'D',text:`A leaky valve allowing blood to flow backward with each beat`}],fb:`Chronic hypertension — elevated afterload. The engine and fuel lines are fine, but the resistance downstream is relentless.`},
+'C1-Q2':{s:1,l:'Cause',clue:`Imagine pumping water through a garden hose. Now imagine someone kinks the hose halfway down. The pump has to generate more pressure to push the same amount of water through. Now imagine the kink never comes out — day after day, year after year.`,q:`What is the "kink in the hose" in cardiovascular terms?`,o:[{ltr:'A',text:`Chronically elevated systemic vascular resistance from sustained high blood pressure`,c:1},{ltr:'B',text:`Low blood volume from dehydration reducing the amount of fluid in the system`},{ltr:'C',text:`A blood clot blocking flow through the lungs`},{ltr:'D',text:`A narrowed mitral valve reducing blood flow into the left ventricle`}],fb:`Elevated systemic vascular resistance = chronic afterload. The kink never comes out.`},
+'C1-Q3':{s:1,l:'Cause',clue:`Blood pressure: 170/100 mmHg. For 15 years. The patient feels fine — hypertension has no symptoms until the damage is done. But every beat, the left ventricle is pushing against resistance that a normal heart never faces. Afterload is the pressure the ventricle must overcome to eject blood. This patient's afterload has been abnormally high for a decade and a half.`,q:`What is the primary hemodynamic burden on this heart?`,o:[{ltr:'A',text:`Volume overload — too much blood is filling the ventricle`},{ltr:'B',text:`Chronic pressure overload — the ventricle faces excessive afterload with every beat`,c:1},{ltr:'C',text:`Increased heart rate — the heart is beating too fast and can't fill between beats`},{ltr:'D',text:`Reduced preload — not enough blood is returning to fill the heart`}],fb:`Pressure overload. 170/100 for 15 years = relentless afterload.`},
+'C2-Q1':{s:2,l:'Trigger',clue:`The heart adapted to the high pressure by building thicker walls — more muscle means more force per beat. For years, this worked. But thick walls are also stiff walls. Now the ventricle can pump OUT fine, but it struggles to RELAX and FILL between beats. The problem has shifted from ejection to filling.`,q:`What has happened to the heart's function?`,o:[{ltr:'A',text:`The heart's electrical system has been disrupted by the thick muscle`},{ltr:'B',text:`The coronary arteries have become blocked from the high pressure`},{ltr:'C',text:`The thickened ventricle has become too stiff to relax and fill properly — diastolic dysfunction`,c:1},{ltr:'D',text:`The aortic valve has been crushed by the thickened wall`}],fb:`Diastolic dysfunction. The adaptation (hypertrophy) creates a new problem: thick walls can't relax.`},
+'C2-Q2':{s:2,l:'Trigger',clue:`A weightlifter builds huge muscles to lift heavy loads. Impressive. But ask those muscles to stretch and relax — they can't. The hypertrophied heart has the same problem: systolic function is preserved (it squeezes fine), but diastolic function is impaired (it can't relax to fill). The EF is still 55%, but the patient is short of breath.`,q:`What type of heart failure is this, and why is the EF misleading?`,o:[{ltr:'A',text:`This is heart failure with REDUCED ejection fraction — the EF will drop soon`},{ltr:'B',text:`This is right-sided heart failure — the left side is fine but the right side can't keep up`},{ltr:'C',text:`This is heart failure with PRESERVED ejection fraction — the heart squeezes normally but can't relax and fill, so the EF looks fine even though the patient has heart failure symptoms`,c:1},{ltr:'D',text:`This is not heart failure — if EF is 55%, the heart is working normally`}],fb:`HFpEF — heart failure with preserved ejection fraction. The EF lies. The heart squeezes fine but can't relax.`},
+'C2-Q3':{s:2,l:'Trigger',clue:`The patient has no symptoms at first — the thick-walled heart compensates perfectly. Then breathlessness climbing stairs. Then waking up at night gasping for air. All while their EF stays above 50%. The problem isn't pumping — it's filling. When the stiff walls won't relax, filling pressure goes up, and fluid gets pushed back into the lungs.`,q:`Why does fluid back up into the lungs even though the EF is normal?`,o:[{ltr:'A',text:`Because the patient is drinking too much water`},{ltr:'B',text:`Because the lungs have developed their own disease independent of the heart`},{ltr:'C',text:`Because the right ventricle is pumping too much blood into the lungs`},{ltr:'D',text:`Because the stiff ventricle requires higher filling pressures, which pushes fluid backward into the pulmonary circulation`,c:1}],fb:`High filling pressures. The stiff ventricle demands more pressure to fill — that pressure transmits backward into the lungs.`},
+'C3-Q1':{s:3,l:'Event',clue:`Years of working against excessive pressure have taken their toll. The thick walls begin to thin and stretch. The hypertrophy that once compensated is now giving way to dilation. The chamber gets bigger, the walls get weaker, and the ejection fraction — which had been preserved at 55% — drops to 30%.`,q:`What structural transition has occurred?`,o:[{ltr:'A',text:`The heart has developed a restrictive pattern — walls getting stiffer and smaller`},{ltr:'B',text:`The sac around the heart has hardened and is squeezing it from outside`},{ltr:'C',text:`The hypertrophied ventricle has dilated and weakened — it has "burned out" from years of pressure overload`,c:1},{ltr:'D',text:`A large heart attack has suddenly destroyed a section of the wall`}],fb:`Burned-out hypertensive heart. The adaptation that once saved it (hypertrophy) has now destroyed it.`},
+'C3-Q2':{s:3,l:'Event',clue:`Phase 1: The heart builds thicker walls to fight the high pressure (compensated hypertrophy — EF normal). Phase 2: The thick walls become too stiff to fill properly (diastolic dysfunction — EF still normal but symptoms appear). Phase 3: The walls thin, the chamber dilates, and the EF crashes to 25%.`,q:`What is ironic about this three-phase progression?`,o:[{ltr:'A',text:`The patient's blood pressure actually returned to normal, but the heart still failed`},{ltr:'B',text:`The heart developed a new, unrelated condition on top of the hypertension`},{ltr:'C',text:`The heart got worse because the patient stopped taking medications`},{ltr:'D',text:`The adaptation that initially protected the heart (hypertrophy) eventually destroyed it — the compensation itself became the disease`,c:1}],fb:`The cruelest irony: the heart's own protective response — hypertrophy — is what eventually kills it.`},
+'C3-Q3':{s:3,l:'Event',clue:`The irony: the heart spent years getting stronger to fight the pressure. Now that very adaptation has burned it out. The thick walls developed scarring between muscle fibers. The chamber has dilated. What started as a PRESSURE problem now looks identical to a VOLUME problem — a big, floppy, weak ventricle.`,q:`At this stage, does the hypertensive heart look more like the ischemic pathway or the dilated cardiomyopathy pathway?`,o:[{ltr:'A',text:`It looks like the ischemic pathway — the primary problem is still blocked coronary arteries`},{ltr:'B',text:`It has fully recovered and looks like a normal heart again`},{ltr:'C',text:`It looks completely unique — nothing like either pathway`},{ltr:'D',text:`It looks like dilated cardiomyopathy — a dilated, weak ventricle with reduced EF, regardless of the original cause`,c:1}],fb:`At the endpoint, the burned-out hypertensive heart is indistinguishable from dilated cardiomyopathy. Different starting point, same destination.`},
+'C4-Q1':{s:4,l:'Short-Term Consequence',cv:1,clue:`The heart's output drops, and the baroreceptors trigger the same sympathetic response as every other failing heart: heart rate up, blood vessels constrict, kidneys retain fluid. But here's the cruel twist — vasoconstriction RAISES the resistance the heart pumps against. That's afterload. And afterload is exactly what caused this whole mess. The body's rescue plan is pouring gasoline on the fire.`,q:`Why is the sympathetic compensatory response ESPECIALLY destructive for the hypertensive patient?`,o:[{ltr:'A',text:`Because their kidneys have already failed and can't retain any fluid`},{ltr:'B',text:`Because the vasoconstriction increases afterload — directly worsening the original pressure overload that caused the cardiomyopathy`,c:1},{ltr:'C',text:`Because their blood vessels are immune to sympathetic stimulation`},{ltr:'D',text:`Because their heart beats too fast for the sympathetic system to add any more speed`}],fb:`Gasoline on a fire. The sympathetic response raises afterload — the exact hemodynamic insult that caused this heart to fail in the first place.`},
+'C4-Q2':{s:4,l:'Short-Term Consequence',cv:1,clue:`Patient A (ischemic), Patient B (weak muscle), and Patient C (hypertensive) all have the same compensatory response. For A and B, this increases workload on an already failing pump — that's bad. For C, it's WORSE — because the vasoconstriction directly recreates the condition that CAUSED the failure. Pressure overload broke this heart. The body's response? More pressure.`,q:`All three patients share the same compensatory response. What makes Patient C's situation uniquely dangerous?`,o:[{ltr:'A',text:`The compensatory vasoconstriction increases afterload, which is the exact hemodynamic insult that caused Patient C's heart failure in the first place — creating a self-reinforcing cycle`,c:1},{ltr:'B',text:`Patient C has a faster heart rate than Patients A and B`},{ltr:'C',text:`Patient C's heart is smaller and therefore more fragile`},{ltr:'D',text:`Patient C cannot take any blood pressure medications`}],fb:`The self-reinforcing cycle. For C, vasoconstriction adds the SAME injury — pressure overload caused this, and the body's response creates more.`},
+'C4-Q3':{s:4,l:'Short-Term Consequence',cv:1,clue:`In all three pathways, vasoconstriction increases afterload. For ischemic, afterload was never the original problem (supply blockage). For weak muscle, afterload was never the original problem. But for hypertensive, afterload WAS the original problem. So when the body's compensation raises afterload, it's adding the SAME injury that started everything.`,q:`Why does this feedback loop accelerate the hypertensive pathway's decline faster?`,o:[{ltr:'A',text:`Because afterload only affects the right ventricle, not the left`},{ltr:'B',text:`Because increased afterload makes the blood flow backward through the valves`},{ltr:'C',text:`Because afterload has no effect on cardiac output`},{ltr:'D',text:`Because increased afterload directly reduces stroke volume in a heart that is already failing FROM pressure overload — each cycle of compensation makes the next cycle worse`,c:1}],fb:`Each cycle is worse than the last. Afterload ↑ → SV ↓ → CO ↓ → more sympathetic activation → more vasoconstriction → afterload ↑↑. The spiral tightens.`},
+'C5-Q1':{s:5,l:'Long-Term Consequence',cv:1,clue:`The burned-out hypertensive heart has reached the same destination as the post-MI heart and the weak-muscle heart: Stage D, NYHA Class IV, all medications exhausted, EF in the teens. Three different roads. One endpoint. The biological pump is done.`,q:`What do these three patients now need?`,o:[{ltr:'A',text:`Referral for counseling to help them accept their condition`},{ltr:'B',text:`Surgery to repair their heart valves`},{ltr:'C',text:`Mechanical circulatory support — an LVAD — because all three have reached end-stage pump failure beyond medical therapy`,c:1},{ltr:'D',text:`A completely new medication approach that hasn't been tried yet`}],fb:`Three roads. One endpoint. One engineering solution. The LVAD doesn't care how the ventricle failed.`},
+'C5-Q2':{s:5,l:'Long-Term Consequence',cv:1,clue:`The convergence is complete. Ischemic. Dilated. Hypertensive. At the endpoint, all three look the same: a big, weak, dilated left ventricle that can barely move blood. The engineering problem is identical — a failed mechanical pump. And the engineering solution is the same.`,q:`What engineering principle does this convergence demonstrate?`,o:[{ltr:'A',text:`The three pathways all have the same root cause at the molecular level`},{ltr:'B',text:`Different failure modes can produce the same system-level failure — and the same system-level solution`,c:1},{ltr:'C',text:`Only ischemic heart disease is serious enough to need an LVAD`},{ltr:'D',text:`Different diseases always require completely different engineering solutions`}],fb:`Different failure modes → same system-level failure → same engineering intervention. A core systems engineering principle.`},
+'C5-Q3':{s:5,l:'Long-Term Consequence',cv:1,clue:`An engineer looks at this patient and sees a system with a broken actuator. The actuator (the left ventricle) has degraded beyond repair. The control system (the baroreflex) is stuck in overdrive. The downstream systems (kidneys, lungs, brain) are failing. The engineering solution: bypass the broken actuator with a mechanical one.`,q:`In this systems view, what does the LVAD replace?`,o:[{ltr:'A',text:`The actuator — it takes over the pumping function of the failed left ventricle`,c:1},{ltr:'B',text:`The sensors — it replaces the baroreceptors with electronic pressure sensors`},{ltr:'C',text:`The control system — it takes over the baroreflex and sympathetic regulation`},{ltr:'D',text:`The downstream organs — it artificially supports the kidneys, lungs, and brain individually`}],fb:`The LVAD replaces the actuator. The broken pump. It doesn't replace sensors or control — just the mechanical component that's failed.`},
+};
+
+// ============================================================
+// DATA: REVEAL INFO PER CASCADE
+// ============================================================
+const REVEAL = {
+  A:{disease:'Ischemic Cardiomyopathy',nodes:['Coronary Artery Disease','Myocardial Infarction','Ventricular Remodeling','Sympathetic Compensation','LVAD Candidacy'],summary:`Chronic coronary artery disease starved the heart muscle of blood, triggering an infarction that left behind scar tissue and a dilated, weakened ventricle — <em>ischemic cardiomyopathy</em>. The body's own rescue response made it worse. The biological pump has failed.`},
+  B:{disease:'Nonischemic Dilated Cardiomyopathy',nodes:['Weak Heart Muscle','Physiological Stressor','Acute Decompensation','Sympathetic Compensation','LVAD Candidacy'],summary:`A heart muscle that was inherently weak — from genetics, a virus, or a toxin — held on until a stressor pushed it past its limited reserve. The ventricle decompensated, the body's compensation made it worse, and the biological pump failed — <em>nonischemic dilated cardiomyopathy</em>.`},
+  C:{disease:'Hypertensive Cardiomyopathy',nodes:['Chronic Hypertension','Diastolic Dysfunction','Burned-Out Dilation','Sympathetic Compensation','LVAD Candidacy'],summary:`Years of relentless high blood pressure forced the heart to thicken, stiffen, and ultimately burn out. The body's compensatory vasoconstriction poured gasoline on the fire, recreating the exact pressure overload that started it all — <em>hypertensive cardiomyopathy</em>.`},
+};
+
+const STAGE_LABELS = ['Cause','Trigger','Event','Short-Term','Long-Term'];
+const STAGE_TITLES = {1:'The Underlying Vulnerability',2:'The Sudden Disturbance',3:'The Immediate Breakdown',4:"The Body's Rescue Plan",5:'The Endpoint'};
+
+// ============================================================
+// STATE
+// ============================================================
+let teamName = '';
+let cascade = '';
+let questionIds = [];  // e.g. ['A1-Q2','A2-Q1','A3-Q3','A4-Q1','A5-Q2']
+let currentStage = 0;  // 0-indexed (0=stage1, 4=stage5)
+let locked = false;
+let selectedIdx = null;
+let results = [];  // {stage, questionId, selectedLetter, correct}
+let pollTimer = null;
+let gameState = 'waiting';
+let timerEnd = null;
+
+// ============================================================
+// BACKEND CALLS (JSONP)
+// ============================================================
+let callbackCounter = 0;
+
+function api(action, params, cb) {
+  const cbName = '_cb' + (callbackCounter++);
+  window[cbName] = function(data) {
+    delete window[cbName];
+    if (cb) cb(data);
+  };
+  let url = BACKEND + '?callback=' + cbName + '&action=' + action;
+  if (params) {
+    for (const k in params) {
+      url += '&' + encodeURIComponent(k) + '=' + encodeURIComponent(params[k]);
+    }
+  }
+  const s = document.createElement('script');
+  s.src = url;
+  s.onerror = function() { delete window[cbName]; };
+  document.body.appendChild(s);
+  setTimeout(() => { if (s.parentNode) s.parentNode.removeChild(s); }, 10000);
+}
+
+// ============================================================
+// POLLING
+// ============================================================
+function startPolling() {
+  if (pollTimer) return;
+  pollTimer = setInterval(poll, POLL_MS);
+  poll(); // immediate first poll
+}
+
+function poll() {
+  api('getState', null, function(data) {
+    if (data.error) return;
+
+    // Freeze
+    const frozen = data.freeze === true || data.freeze === 'true';
+    document.getElementById('frozenOverlay').classList.toggle('show', frozen);
+
+    // Timer
+    handleTimer(data.timer_end, data.timer_label);
+
+    // Game state transitions
+    const newState = data.game_state;
+    if (newState !== gameState) {
+      gameState = newState;
+      onStateChange(newState);
+    }
+  });
+}
+
+function onStateChange(state) {
+  if (state === 'task1' && cascade && questionIds.length > 0) {
+    showScreen('scrGame');
+    if (currentStage === 0) renderStage();
+  }
+  // Future: task2, reveal, finished
+}
+
+function handleTimer(endStr, label) {
+  const display = document.getElementById('timerDisplay');
+  const fill = document.getElementById('timerFill');
+
+  if (!endStr) {
+    display.classList.add('hidden');
+    fill.style.width = '100%';
+    timerEnd = null;
+    return;
+  }
+
+  timerEnd = new Date(endStr).getTime();
+  display.classList.remove('hidden');
+  updateTimerDisplay();
+}
+
+function updateTimerDisplay() {
+  if (!timerEnd) return;
+  const now = Date.now();
+  const remaining = Math.max(0, timerEnd - now);
+  const totalDuration = timerEnd - (timerEnd - remaining); // we don't know original, just show remaining
+  const mins = Math.floor(remaining / 60000);
+  const secs = Math.floor((remaining % 60000) / 1000);
+  const display = document.getElementById('timerDisplay');
+  display.textContent = mins + ':' + String(secs).padStart(2, '0');
+  display.classList.toggle('urgent', remaining < 60000);
+
+  if (remaining > 0) {
+    setTimeout(updateTimerDisplay, 1000);
+  } else {
+    display.textContent = '0:00';
+    display.classList.add('urgent');
+  }
+}
+
+// ============================================================
+// SCREENS
+// ============================================================
+function showScreen(id) {
+  ['scrReg','scrWait','scrGame','scrDone'].forEach(s => {
+    const el = document.getElementById(s);
+    if (s === id) el.classList.remove('hidden');
+    else el.classList.add('hidden');
+    // Special case for done screen
+    if (s === 'scrDone') {
+      if (s === id) el.classList.add('show');
+      else el.classList.remove('show');
+    }
+  });
+}
+
+// ============================================================
+// REGISTRATION
+// ============================================================
+function joinGroup(num) {
+  const name = 'Group ' + num;
+  const err = document.getElementById('regErr');
+
+  // Disable all buttons
+  document.querySelectorAll('.group-btn').forEach(b => { b.disabled = true; b.style.opacity = '0.4'; });
+  const clickedBtn = document.querySelectorAll('.group-btn')[num - 1];
+  clickedBtn.classList.add('picked');
+  clickedBtn.style.opacity = '1';
+
+  api('registerTeam', { teamName: name }, function(data) {
+    if (data.error) {
+      err.textContent = data.error;
+      err.style.display = 'block';
+      // Re-enable buttons
+      document.querySelectorAll('.group-btn').forEach(b => { b.disabled = false; b.style.opacity = '1'; b.classList.remove('picked'); });
+      return;
+    }
+
+    teamName = data.teamName;
+    cascade = data.cascade || '';
+    if (data.task1_questionIds) {
+      questionIds = data.task1_questionIds.split(',');
+    }
+    currentStage = parseInt(data.task1_stage) || 0;
+    if (currentStage > 0) currentStage--; // convert 1-indexed to 0-indexed
+
+    // Save to sessionStorage for page refresh
+    sessionStorage.setItem('studio2_group', num);
+
+    document.getElementById('waitBadge').textContent = teamName;
+    document.getElementById('gameTeamName').textContent = teamName;
+
+    // If game is already running and team has cascade
+    if (gameState === 'task1' && cascade && questionIds.length > 0) {
+      if (data.task1_complete) {
+        showReveal();
+      } else {
+        showScreen('scrGame');
+        renderStage();
+      }
+    } else {
+      showScreen('scrWait');
+    }
+
+    startPolling();
+  });
+}
+
+// Restore session on page load
+function restoreSession() {
+  const saved = sessionStorage.getItem('studio2_group');
+  if (saved) {
+    joinGroup(parseInt(saved));
+  }
+}
+
+// ============================================================
+// TASK 1: GAME LOGIC
+// ============================================================
+function renderStage() {
+  if (currentStage >= 5) {
+    showReveal();
+    return;
+  }
+
+  const qId = questionIds[currentStage];
+  const q = MCQ[qId];
+  if (!q) return;
+
+  // Build tracker
+  const tracker = document.getElementById('tracker');
+  tracker.innerHTML = STAGE_LABELS.map((lbl, i) =>
+    `<div class="pip ${i < currentStage ? 'done' : i === currentStage ? 'active' : ''}" data-s="${i+1}"><span class="pip-lbl">${lbl}</span></div>`
+  ).join('');
+
+  // Convergence notice
+  let cvHTML = '';
+  if (q.cv) {
+    cvHTML = `<div class="convergence"><h3>⟐ Convergence Point</h3><p>All three pathways arrive at the same answer here.</p></div>`;
+  }
+
+  // Render question
+  document.getElementById('questionArea').innerHTML = `
+    <div class="stage-lbl">
+      <div class="num">Stage ${currentStage + 1} of 5</div>
+      <h2>${STAGE_TITLES[currentStage + 1]}</h2>
+    </div>
+    ${cvHTML}
+    <div class="clue">
+      <div class="clue-tag">Clue</div>
+      ${q.clue}
+    </div>
+    <div class="q-text">${q.q}</div>
+    <div class="opts" id="opts">
+      ${q.o.map((opt, i) => `
+        <div class="opt" data-idx="${i}" onclick="selectOpt(${i})">
+          <span class="ltr">${opt.ltr}</span>
+          <span>${opt.text}</span>
+        </div>
+      `).join('')}
+    </div>
+    <div class="fb" id="fb"></div>
+    <div class="actions">
+      <button class="btn btn-go" id="submitBtn" disabled onclick="submitAnswer()">SUBMIT</button>
+      <button class="btn btn-go" id="nextBtn" style="display:none" onclick="nextStage()">NEXT STAGE →</button>
+    </div>
+  `;
+
+  locked = false;
+  selectedIdx = null;
+}
+
+function selectOpt(idx) {
+  if (locked) return;
+  selectedIdx = idx;
+  document.querySelectorAll('.opt').forEach((el, i) => {
+    el.classList.toggle('selected', i === idx);
+  });
+  document.getElementById('submitBtn').disabled = false;
+}
+
+function submitAnswer() {
+  if (selectedIdx === null || locked) return;
+  locked = true;
+
+  const qId = questionIds[currentStage];
+  const q = MCQ[qId];
+  const chosen = q.o[selectedIdx];
+  const correctIdx = q.o.findIndex(o => o.c);
+  const fb = document.getElementById('fb');
+  const opts = document.querySelectorAll('.opt');
+  const isCorrect = !!chosen.c;
+
+  // Save result locally
+  results.push({
+    stage: currentStage + 1,
+    questionId: qId,
+    selectedLetter: chosen.ltr,
+    correct: isCorrect
+  });
+
+  // Log to backend
+  api('submitTask1', {
+    teamName: teamName,
+    stage: currentStage + 1,
+    questionId: qId,
+    selectedLetter: chosen.ltr,
+    correct: isCorrect ? 'true' : 'false'
+  });
+
+  if (isCorrect) {
+    opts[selectedIdx].classList.remove('selected');
+    opts[selectedIdx].classList.add('correct');
+    opts.forEach((el, i) => { if (i !== selectedIdx) el.classList.add('dimmed'); });
+    fb.className = 'fb ok show';
+    fb.textContent = q.fb;
+  } else {
+    opts[selectedIdx].classList.remove('selected');
+    opts[selectedIdx].classList.add('wrong');
+    opts[correctIdx].classList.add('correct');
+    opts.forEach((el, i) => { if (i !== correctIdx && i !== selectedIdx) el.classList.add('dimmed'); });
+    fb.className = 'fb bad show';
+    fb.innerHTML = `The correct answer was <strong>${q.o[correctIdx].ltr}</strong>. ${q.fb}`;
+  }
+
+  document.getElementById('submitBtn').style.display = 'none';
+  document.getElementById('nextBtn').style.display = 'inline-flex';
+}
+
+function nextStage() {
+  currentStage++;
+  selectedIdx = null;
+
+  if (currentStage >= 5) {
+    showReveal();
+    return;
+  }
+  renderStage();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function showReveal() {
+  const r = REVEAL[cascade];
+  if (!r) return;
+
+  document.getElementById('revealDisease').textContent = r.disease;
+  document.getElementById('revealPathway').innerHTML = r.nodes.map((n, i) => {
+    const isLast = i === r.nodes.length - 1;
+    let html = `<span class="pw-node${isLast ? ' pw-end' : ''}">${n}</span>`;
+    if (!isLast) html += `<span class="pw-arrow">→</span>`;
+    return html;
+  }).join('');
+  document.getElementById('revealSummary').innerHTML = r.summary;
+
+  showScreen('scrDone');
+
+  // Update tracker to all done
+  const tracker = document.getElementById('tracker');
+  if (tracker) {
+    tracker.innerHTML = STAGE_LABELS.map(lbl =>
+      `<div class="pip done"><span class="pip-lbl">${lbl}</span></div>`
+    ).join('');
+  }
+}
+
+// ============================================================
+// INIT
+// ============================================================
+restoreSession();
+</script>
+</body>
+</html>
