@@ -165,6 +165,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
         <button class="btn btn-gold" id="revealBtn1" onclick="doReveal(1)">① Three Diseases</button>
         <button class="btn btn-gold" id="revealBtn2" onclick="doReveal(2)">② Convergence Map</button>
         <button class="btn btn-red" id="revealBtn3" onclick="doReveal(3)">③ Engineering Insight</button>
+        <button class="btn btn-green" id="revealBtn4" onclick="doReveal(4)">④ Class Stats</button>
         <span style="font-family:var(--font-head);font-size:.75rem;color:var(--text3);margin-left:8px" id="revealStatus">Step: 0</span>
       </div>
     </div>
@@ -501,7 +502,7 @@ function doReveal(step) {
     if (d.error) { alert('Error: ' + d.error); return; }
     document.getElementById('revealStatus').textContent = 'Step: ' + step;
     // Highlight active button
-    for (let i = 0; i <= 3; i++) {
+    for (let i = 0; i <= 4; i++) {
       const btn = document.getElementById('revealBtn' + i);
       if (i === step) {
         btn.style.outline = '2px solid var(--gold)';
