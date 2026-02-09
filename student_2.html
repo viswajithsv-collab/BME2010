@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚡ Task 2 Demo — Would've, Could've, Should've</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080810;--bg-card:#0f0f1a;--bg-hover:#161624;--bg-input:#0b0b14;
+  --border:#1e1528;--border-hot:#5c1a2a;
+  --red:#c41e3a;--red-bright:#e8334f;--red-dim:#3d0f1a;
+  --gold:#c9a84c;--gold-dim:#6b5a2a;
+  --green:#34c769;--green-dim:#1a3d28;
+  --blue:#4a90d9;--blue-dim:#1a2d4a;
+  --purple:#9b59b6;
+  --text:#e4dde0;--text2:#8a7e84;--text3:#4a4248;
+  --font-head:'Oswald',sans-serif;--font-body:'Lora',serif;
+}
+html{font-size:16px}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 60% 40% at 15% 80%,rgba(196,30,58,.07) 0%,transparent 70%),
+  radial-gradient(ellipse 50% 50% at 85% 15%,rgba(100,15,30,.05) 0%,transparent 60%)}
+.wrap{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:28px 24px 80px}
+
+/* HEADER */
+.hdr{text-align:center;padding:24px 0 20px;border-bottom:1px solid var(--border);margin-bottom:28px}
+.hdr-eye{font-family:var(--font-head);font-size:.7rem;font-weight:500;letter-spacing:.25em;text-transform:uppercase;color:var(--red);margin-bottom:8px}
+.hdr h1{font-family:var(--font-head);font-size:2.2rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;line-height:1.05}
+.hdr h1 span{color:var(--gold)}
+.hdr-sub{font-size:.88rem;color:var(--text2);font-style:italic;margin-top:6px}
+.team-strip{text-align:center;margin-bottom:24px}
+.team-name{font-family:var(--font-head);font-weight:600;color:var(--text2);font-size:.85rem;letter-spacing:.06em;padding:6px 16px;border:1px solid var(--border);border-radius:5px;display:inline-block}
+
+/* DEMO BANNER */
+.demo-banner{background:var(--gold-dim);border:1px solid var(--gold);border-radius:8px;padding:10px 18px;margin-bottom:24px;text-align:center;font-family:var(--font-head);font-size:.78rem;letter-spacing:.06em;color:var(--gold)}
+
+/* INSTRUCTIONS BOX */
+.instructions{background:var(--bg-card);border:1px solid var(--border);border-left:3px solid var(--gold);border-radius:8px;padding:16px 20px;margin-bottom:24px;font-size:.88rem;line-height:1.65;color:var(--text2)}
+.instructions strong{color:var(--text);font-weight:500}
+.instructions .tag{font-family:var(--font-head);font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);font-weight:600;margin-bottom:6px}
+
+/* SECTION HEADERS */
+.section-hdr{margin-bottom:16px}
+.section-hdr .num{font-family:var(--font-head);font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:var(--red);font-weight:500}
+.section-hdr h2{font-family:var(--font-head);font-size:1.5rem;font-weight:600;letter-spacing:.02em;text-transform:uppercase;margin-top:2px}
+.section-hdr p{color:var(--text2);font-size:.88rem;margin-top:6px;line-height:1.6}
+
+/* PROGRESS BAR */
+.progress-bar{margin-bottom:20px}
+.progress-label{display:flex;justify-content:space-between;font-family:var(--font-head);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:6px}
+.progress-track{height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;border-radius:3px;transition:width .4s ease}
+.progress-fill.ranking{background:linear-gradient(90deg,var(--red),var(--gold))}
+.progress-fill.mcqs{background:linear-gradient(90deg,var(--gold),var(--green))}
+
+/* TWO COLUMNS */
+.columns{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px}
+@media(max-width:680px){.columns{grid-template-columns:1fr}}
+
+/* CONSTRAINT POOL */
+.pool-title{font-family:var(--font-head);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;font-weight:600}
+.pool{min-height:80px}
+.chip{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 14px;margin-bottom:7px;
+  background:var(--bg-card);border:1px solid var(--border);border-radius:7px;
+  cursor:grab;transition:all .2s;font-size:.85rem;line-height:1.4;
+  user-select:none;-webkit-user-select:none;
+}
+.chip:hover{border-color:var(--border-hot);background:var(--bg-hover)}
+.chip.dragging{opacity:.4;border-color:var(--red)}
+.chip.in-rank{opacity:.25;pointer-events:none;transform:scale(.97)}
+.chip .cid{
+  flex-shrink:0;width:32px;height:32px;display:flex;align-items:center;justify-content:center;
+  border:1px solid var(--border);border-radius:5px;
+  font-family:var(--font-head);font-weight:700;font-size:.7rem;color:var(--text2);letter-spacing:.02em;
+}
+.chip .cname{color:var(--text);font-size:.84rem}
+.chip .ctype{font-family:var(--font-head);font-size:.52rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-top:2px}
+.pool-empty{color:var(--text3);font-size:.82rem;font-style:italic;text-align:center;padding:20px 0}
+
+/* RANK LIST */
+.rank-list{min-height:80px}
+.rank-slot{
+  display:flex;align-items:center;gap:8px;
+  padding:7px 10px;margin-bottom:5px;
+  background:var(--bg-input);border:2px dashed var(--border);border-radius:7px;
+  min-height:44px;transition:all .2s;
+}
+.rank-slot.occupied{border-style:solid;border-color:var(--border-hot);background:var(--bg-card)}
+.rank-slot.dragover{border-color:var(--gold);background:rgba(201,168,76,.04)}
+.rank-slot.mcq-match{border-color:var(--green-dim)}
+.rank-slot.mcq-differ{border-color:var(--gold-dim)}
+.rank-num{
+  flex-shrink:0;width:24px;height:24px;display:flex;align-items:center;justify-content:center;
+  border-radius:50%;font-family:var(--font-head);font-weight:700;font-size:.75rem;
+  background:var(--border);color:var(--text3);
+}
+.rank-slot.occupied .rank-num{background:var(--red-dim);color:var(--red-bright)}
+.rank-slot.mcq-match .rank-num{background:var(--green-dim);color:var(--green)}
+.rank-slot.mcq-differ .rank-num{background:var(--gold-dim);color:var(--gold)}
+.rank-content{flex:1;font-size:.82rem;color:var(--text3);font-style:italic;min-width:0}
+.rank-slot.occupied .rank-content{color:var(--text);font-style:normal}
+.rank-cid{font-family:var(--font-head);font-weight:600;color:var(--text2);margin-right:4px}
+.rank-remove{
+  flex-shrink:0;width:22px;height:22px;display:flex;align-items:center;justify-content:center;
+  border-radius:4px;background:transparent;border:1px solid transparent;
+  color:var(--text3);cursor:pointer;font-size:.75rem;transition:all .15s;
+}
+.rank-remove:hover{border-color:var(--red);color:var(--red-bright);background:var(--red-dim)}
+.rank-mcq-btn{
+  flex-shrink:0;font-family:var(--font-head);font-size:.58rem;letter-spacing:.06em;
+  padding:3px 8px;border-radius:4px;text-transform:uppercase;font-weight:600;
+  cursor:pointer;transition:all .15s;border:none;
+}
+.rank-mcq-btn.pending{background:var(--gold-dim);color:var(--gold)}
+.rank-mcq-btn.pending:hover{background:var(--gold);color:#080810}
+.rank-mcq-btn.match{background:var(--green-dim);color:var(--green);cursor:default}
+.rank-mcq-btn.differ{background:var(--gold-dim);color:var(--gold);cursor:default}
+
+/* REORDER BUTTONS */
+.rank-arrows{display:flex;flex-direction:column;gap:1px;flex-shrink:0}
+.rank-arrow{
+  width:18px;height:14px;display:flex;align-items:center;justify-content:center;
+  background:transparent;border:1px solid var(--border);border-radius:3px;
+  color:var(--text3);cursor:pointer;font-size:.55rem;transition:all .1s;padding:0;
+}
+.rank-arrow:hover{border-color:var(--text2);color:var(--text);background:var(--bg-hover)}
+
+/* MCQ OVERLAY */
+.mcq-overlay{display:none;position:fixed;inset:0;background:rgba(8,8,16,.88);z-index:100;align-items:center;justify-content:center;padding:20px}
+.mcq-overlay.show{display:flex}
+.mcq-box{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:28px 24px;max-width:620px;width:100%;max-height:90vh;overflow-y:auto;animation:fadeUp .3s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.mcq-box .mcq-hdr{font-family:var(--font-head);font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:12px;font-weight:600}
+.mcq-box .mcq-q{font-size:.92rem;line-height:1.65;margin-bottom:20px}
+.mcq-opts{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.mcq-opt{
+  display:flex;align-items:flex-start;gap:12px;padding:12px 16px;
+  background:var(--bg);border:1px solid var(--border);border-radius:7px;
+  cursor:pointer;transition:all .2s;font-size:.88rem;line-height:1.5;
+}
+.mcq-opt:hover{border-color:var(--border-hot);background:var(--bg-hover)}
+.mcq-opt.selected{border-color:var(--red);background:rgba(196,30,58,.06)}
+.mcq-opt.recommended{border-color:var(--green);background:rgba(52,199,105,.06)}
+.mcq-opt.yours-match{border-color:var(--green);background:rgba(52,199,105,.06)}
+.mcq-opt.yours-differ{border-color:var(--gold);background:rgba(201,168,76,.06)}
+.mcq-opt.dimmed{opacity:.3;pointer-events:none}
+.mcq-opt .ltr{
+  flex-shrink:0;width:26px;height:26px;display:flex;align-items:center;justify-content:center;
+  border:1px solid var(--border);border-radius:5px;font-family:var(--font-head);font-weight:600;font-size:.78rem;color:var(--text2);transition:all .15s;
+}
+.mcq-opt.selected .ltr{border-color:var(--red);color:var(--red-bright)}
+.mcq-opt.recommended .ltr{border-color:var(--green);color:var(--green)}
+.mcq-opt.yours-match .ltr{border-color:var(--green);color:var(--green)}
+.mcq-opt.yours-differ .ltr{border-color:var(--gold);color:var(--gold)}
+.mcq-badge-inline{
+  display:inline-block;font-family:var(--font-head);font-size:.55rem;letter-spacing:.08em;
+  text-transform:uppercase;font-weight:600;padding:2px 6px;border-radius:3px;margin-left:8px;vertical-align:middle;
+}
+.mcq-badge-inline.rec{background:var(--green-dim);color:var(--green)}
+.mcq-badge-inline.you{background:var(--gold-dim);color:var(--gold)}
+.mcq-badge-inline.you-match{background:var(--green-dim);color:var(--green)}
+.mcq-fb{padding:14px 16px;border-radius:7px;font-size:.86rem;line-height:1.6;display:none;margin-bottom:16px;
+  background:var(--bg);border:1px solid var(--border);color:var(--text2)}
+.mcq-fb.show{display:block}
+.mcq-actions{text-align:center}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:13px 32px;border:none;border-radius:6px;font-family:var(--font-head);font-size:.88rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:all .2s}
+.btn-go{background:var(--red);color:#fff}.btn-go:hover{background:var(--red-bright)}
+.btn-go:disabled{background:var(--red-dim);color:var(--text3);cursor:not-allowed}
+.btn-gold{background:var(--gold);color:#080810}.btn-gold:hover{background:#d9b85c}
+.btn-out{background:transparent;border:1px solid var(--border);color:var(--text2)}.btn-out:hover{border-color:var(--text2);color:var(--text)}
+
+/* CONSIDERATIONS */
+.considers-section{margin-top:28px;padding-top:24px;border-top:1px solid var(--border)}
+.consider-row{display:flex;gap:8px;margin-bottom:8px}
+.consider-input{
+  flex:1;padding:12px 14px;background:var(--bg-input);border:1px solid var(--border);border-radius:7px;
+  color:var(--text);font-family:var(--font-body);font-size:.88rem;resize:none;outline:none;
+}
+.consider-input:focus{border-color:var(--red)}
+.consider-input::placeholder{color:var(--text3);font-style:italic}
+.consider-num{
+  flex-shrink:0;width:24px;height:24px;display:flex;align-items:center;justify-content:center;
+  border-radius:50%;font-family:var(--font-head);font-weight:700;font-size:.72rem;
+  background:var(--border);color:var(--text3);margin-top:10px;
+}
+
+/* SUBMIT AREA */
+.submit-area{text-align:center;margin-top:28px;padding-top:20px;border-top:1px solid var(--border)}
+.submit-area p{color:var(--text2);font-size:.84rem;margin-bottom:14px;line-height:1.5}
+.submit-checklist{display:flex;justify-content:center;gap:20px;margin-bottom:16px;font-family:var(--font-head);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase}
+.check-item{color:var(--text3)}.check-item.done{color:var(--green)}
+
+/* DONE SCREEN */
+.done-screen{text-align:center;padding:48px 0;display:none}
+.done-screen.show{display:block;animation:fadeUp .5s ease}
+.done-icon{font-size:3rem;margin-bottom:16px}
+.done-screen h2{font-family:var(--font-head);font-size:2rem;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px}
+.done-screen p{color:var(--text2);font-size:.9rem;line-height:1.6}
+.done-summary{text-align:left;max-width:520px;margin:24px auto 0;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:20px}
+.done-summary h3{font-family:var(--font-head);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:10px}
+.done-rank-item{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:.84rem;border-bottom:1px solid rgba(30,21,40,.3)}
+.done-rank-item:last-child{border-bottom:none}
+.done-rank-item .dnum{font-family:var(--font-head);font-weight:700;color:var(--red-bright);width:22px;text-align:center}
+.done-rank-item .dname{flex:1;color:var(--text)}
+.done-rank-item .dmcq{font-family:var(--font-head);font-size:.65rem;letter-spacing:.06em;text-transform:uppercase}
+.done-rank-item .dmcq.match{color:var(--green)}
+.done-rank-item .dmcq.differ{color:var(--gold)}
+
+/* REGISTRATION */
+.reg{max-width:520px;margin:0 auto;text-align:center;padding:48px 0}
+.reg h2{font-family:var(--font-head);font-size:1.7rem;letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px}
+.reg p{color:var(--text2);font-size:.9rem;margin-bottom:24px}
+.group-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px}
+.group-btn{padding:18px 0;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;font-family:var(--font-head);font-size:1.4rem;font-weight:700;color:var(--text);cursor:pointer;transition:all .2s;letter-spacing:.02em}
+.group-btn:hover{border-color:var(--red);background:var(--bg-hover);color:var(--red-bright)}
+.group-btn:active{background:var(--red-dim);border-color:var(--red-bright)}
+.group-btn.picked{background:var(--red);border-color:var(--red-bright);color:#fff;cursor:default;pointer-events:none}
+.reg-err{color:var(--red-bright);font-size:.83rem;margin-top:10px;display:none}
+
+/* WAITING */
+.waiting{text-align:center;padding:64px 0}
+.waiting h2{font-family:var(--font-head);font-size:1.8rem;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px}
+.waiting p{color:var(--text2);font-size:.9rem}
+.team-badge{display:inline-block;margin-top:18px;padding:8px 20px;border:1px solid var(--border);border-radius:6px;font-family:var(--font-head);font-weight:600;font-size:.9rem;color:var(--text2);letter-spacing:.06em}
+
+/* TIMER BAR */
+.timer-bar{position:fixed;top:0;left:0;right:0;height:4px;background:var(--bg);z-index:50}
+.timer-fill{height:100%;background:linear-gradient(90deg,var(--red),var(--red-bright));width:100%;transition:width 1s linear}
+.timer-display{position:fixed;top:8px;right:16px;z-index:51;font-family:var(--font-head);font-size:1.1rem;letter-spacing:.08em;color:var(--text3)}
+.timer-display.urgent{color:var(--red-bright);animation:timerPulse 1s infinite}
+@keyframes timerPulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* FROZEN OVERLAY */
+.frozen{display:none;position:fixed;inset:0;background:rgba(8,8,16,.92);z-index:200;align-items:center;justify-content:center;text-align:center}
+.frozen.show{display:flex}
+.frozen h2{font-family:var(--font-head);font-size:2.5rem;color:var(--text2);letter-spacing:.1em;text-transform:uppercase}
+.frozen p{color:var(--text3);margin-top:8px}
+
+.hidden{display:none!important}
+@media(max-width:600px){.wrap{padding:16px 14px 60px}.hdr h1{font-size:1.8rem}.mcq-box{padding:20px 16px}.rank-content{font-size:.76rem}}
+@keyframes pulse{0%,100%{opacity:.3;transform:scale(1)}50%{opacity:1;transform:scale(1.4)}}
+</style>
+</head>
+<body>
+
+<!-- TIMER -->
+<div class="timer-bar"><div class="timer-fill" id="timerFill"></div></div>
+<div class="timer-display hidden" id="timerDisplay">--:--</div>
+
+<!-- FROZEN OVERLAY -->
+<div class="frozen" id="frozenOverlay"><div><h2>⏸ Paused</h2><p>Waiting for the instructor…</p></div></div>
+
+<div class="wrap">
+  <div class="hdr">
+    <div class="hdr-eye">BME 2010 · Studio 2 · Task 2</div>
+    <h1>Would've, Could've, <span>Should've</span></h1>
+    <div class="hdr-sub">What should you never get wrong? What would you sacrifice? Rank it. Quantify it.</div>
+  </div>
+
+  <!-- SCREEN: REGISTRATION -->
+  <div id="scrReg" class="reg">
+    <h2>Select Your Group</h2>
+    <p>Same group as Task 1. Everyone at the same table picks the same number.</p>
+    <div class="group-grid" id="groupGrid">
+      <button class="group-btn" onclick="joinGroup(1)">1</button>
+      <button class="group-btn" onclick="joinGroup(2)">2</button>
+      <button class="group-btn" onclick="joinGroup(3)">3</button>
+      <button class="group-btn" onclick="joinGroup(4)">4</button>
+      <button class="group-btn" onclick="joinGroup(5)">5</button>
+      <button class="group-btn" onclick="joinGroup(6)">6</button>
+      <button class="group-btn" onclick="joinGroup(7)">7</button>
+      <button class="group-btn" onclick="joinGroup(8)">8</button>
+      <button class="group-btn" onclick="joinGroup(9)">9</button>
+      <button class="group-btn" onclick="joinGroup(10)">10</button>
+      <button class="group-btn" onclick="joinGroup(11)">11</button>
+      <button class="group-btn" onclick="joinGroup(12)">12</button>
+      <button class="group-btn" onclick="joinGroup(13)">13</button>
+      <button class="group-btn" onclick="joinGroup(14)">14</button>
+      <button class="group-btn" onclick="joinGroup(15)">15</button>
+    </div>
+    <div class="reg-err" id="regErr"></div>
+  </div>
+
+  <!-- SCREEN: WAITING -->
+  <div id="scrWait" class="waiting hidden">
+    <h2><span class="pulse"></span> Waiting for Task 2</h2>
+    <p>Your instructor will launch the next task shortly.</p>
+    <div class="team-badge" id="waitBadge"></div>
+  </div>
+
+  <!-- TEAM STRIP (shown during task) -->
+  <div class="team-strip hidden" id="teamStrip"><span class="team-name" id="teamBadge">—</span></div>
+
+  <!-- ==================== MAIN TASK (hidden until state=task2) ==================== -->
+  <div id="scrTask" class="hidden">
+    <div class="instructions">
+      <div class="tag">Your Mission</div>
+      Your patient has an LVAD and is going home. The device keeps them alive — but the <strong>numbers</strong> keep them safe.<br><br>
+      Below are <strong>12 engineering constraints</strong> — measurable targets the care team must monitor.
+      <strong>Rank all 12</strong> from most critical (#1) to least critical (#12). For each one, you'll quantify the target value.<br><br>
+      Then write <strong>2–3 considerations</strong> — things that matter but can't be reduced to a single number.
+    </div>
+
+    <!-- Progress bars -->
+    <div class="progress-bar">
+      <div class="progress-label"><span>Ranked</span><span id="rankCount">0 / 12</span></div>
+      <div class="progress-track"><div class="progress-fill ranking" id="rankFill" style="width:0%"></div></div>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-label"><span>Quantified (MCQs)</span><span id="mcqCount">0 / 12</span></div>
+      <div class="progress-track"><div class="progress-fill mcqs" id="mcqFill" style="width:0%"></div></div>
+    </div>
+
+    <!-- Two columns -->
+    <div class="columns">
+      <div>
+        <div class="pool-title">Available Constraints</div>
+        <div class="pool" id="pool"></div>
+      </div>
+      <div>
+        <div class="pool-title">Your Ranking — Most Critical → Least</div>
+        <div class="rank-list" id="rankList"></div>
+      </div>
+    </div>
+
+    <!-- Considerations -->
+    <div class="considers-section">
+      <div class="section-hdr">
+        <div class="num">Part B</div>
+        <h2>Considerations</h2>
+        <p>What else matters — things that are important but <strong>can't be reduced to a single number</strong>?</p>
+      </div>
+      <div class="instructions" style="margin-bottom:16px">
+        <div class="tag">Examples</div>
+        <strong>Caregiver burden and training</strong> — LVAD patients must have a trained caregiver for discharge. Burnout affects outcomes, but no single threshold defines "acceptable burden."<br>
+        <strong>Health equity and access</strong> — LVAD care requires proximity to a specialized center, reliable power, and financial resources.
+      </div>
+      <div id="considerInputs">
+        <div class="consider-row"><div class="consider-num">1</div><textarea class="consider-input" rows="2" placeholder="Write a consideration…" id="con1"></textarea></div>
+        <div class="consider-row"><div class="consider-num">2</div><textarea class="consider-input" rows="2" placeholder="Write a consideration…" id="con2"></textarea></div>
+        <div class="consider-row"><div class="consider-num">3</div><textarea class="consider-input" rows="2" placeholder="Write a consideration (optional)…" id="con3"></textarea></div>
+      </div>
+    </div>
+
+    <!-- Submit -->
+    <div class="submit-area">
+      <div class="submit-checklist">
+        <span class="check-item" id="chkRank">☐ All 12 ranked</span>
+        <span class="check-item" id="chkMcq">☐ All 12 quantified</span>
+        <span class="check-item" id="chkCon">☐ 2+ considerations</span>
+      </div>
+      <button class="btn btn-go" id="submitBtn" disabled onclick="doSubmit()">SUBMIT RANKINGS</button>
+    </div>
+  </div>
+
+  <!-- ==================== DONE SCREEN ==================== -->
+  <div class="done-screen" id="scrDone">
+    <div class="done-icon">⚡</div>
+    <h2>Rankings Submitted</h2>
+    <p>Your team's priorities are locked in. The instructor will reveal the class consensus shortly.</p>
+    <div class="done-summary" id="doneSummary"></div>
+    <p style="color:var(--text3);font-size:.82rem;font-style:italic;margin-top:20px">
+      <span style="display:inline-block;width:7px;height:7px;background:var(--red);border-radius:50%;margin-right:6px;animation:pulse 1.4s ease-in-out infinite"></span>
+      Waiting for all teams to finish…
+    </p>
+  </div>
+</div>
+
+<!-- ==================== MCQ OVERLAY ==================== -->
+<div class="mcq-overlay" id="mcqOverlay">
+  <div class="mcq-box">
+    <div class="mcq-hdr" id="mcqHdr"></div>
+    <div class="mcq-q" id="mcqQuestion"></div>
+    <div class="mcq-opts" id="mcqOpts"></div>
+    <div class="mcq-fb" id="mcqFb"></div>
+    <div class="mcq-actions">
+      <button class="btn btn-go" id="mcqSubmitBtn" disabled onclick="mcqSubmit()">SUBMIT</button>
+      <button class="btn btn-gold hidden" id="mcqDoneBtn" onclick="mcqDone()">CONTINUE →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const BACKEND='https://script.google.com/macros/s/AKfycbx_pEtSHZpfoCO--fsUljx04B7Hl8bYN4btYs_8Y_8jVrNckUu8KY1pIOIada5F_P52/exec';
+const POLL_MS=2500;
+
+const CONSTRAINTS=[
+  {id:'C1',name:'Mean Arterial Pressure (MAP)',type:'Physiological',short:'MAP'},
+  {id:'C2',name:'Cardiac Output / Total System Flow',type:'Physiological',short:'CO'},
+  {id:'C3',name:'Central Venous Pressure (CVP)',type:'Physiological',short:'CVP'},
+  {id:'C4',name:'Pulmonary Capillary Wedge Pressure (PCWP)',type:'Physiological',short:'PCWP'},
+  {id:'C5',name:'Mixed Venous Oxygen Saturation (SvO₂)',type:'Physiological',short:'SvO₂'},
+  {id:'C6',name:'Serum Creatinine (Kidney Perfusion)',type:'Physiological',short:'Creatinine'},
+  {id:'C7',name:'Serum Lactate (Tissue Perfusion)',type:'Physiological',short:'Lactate'},
+  {id:'C8',name:'Heart Rate',type:'Physiological',short:'HR'},
+  {id:'C9',name:'Pump Flow vs. Native Heart Contribution',type:'LVAD Hemodynamic',short:'Flow Ratio'},
+  {id:'C10',name:'Aortic Valve Opening Frequency',type:'LVAD Hemodynamic',short:'AV Opening'},
+  {id:'C11',name:'Pulsatility Index',type:'LVAD Hemodynamic',short:'PI'},
+  {id:'C12',name:'LV End-Diastolic Dimension (LVEDD)',type:'LVAD Hemodynamic',short:'LVEDD'},
+];
+
+const T2MCQ = {
+  C1:{q:"An LVAD patient\u2019s MAP must be kept within a target range. Given that normal MAP is approximately 70\u2013105 mmHg, and that LVAD patients face increased stroke risk at higher pressures while the pump becomes less efficient against high resistance, what is the recommended MAP target?",
+    opts:[{ltr:'A',text:'90\u2013100 mmHg \u2014 high end of normal for strong perfusion'},{ltr:'B',text:'50\u201360 mmHg \u2014 as low as possible to reduce pump workload'},{ltr:'C',text:'70\u201380 mmHg',rec:true},{ltr:'D',text:'110\u2013120 mmHg \u2014 higher is always safer for organ perfusion'}],
+    fb:"Clinical guideline: 70\u201380 mmHg. Low enough to reduce stroke risk and pump workload, high enough to perfuse organs. LVAD patients without a pulse can\u2019t use a normal BP cuff \u2014 MAP is measured with a Doppler."},
+  C2:{q:"The LVAD must deliver enough total flow to meet metabolic needs at rest. If normal resting cardiac output is approximately 4\u20135 L/min, what total system flow should the LVAD + native heart provide?",
+    opts:[{ltr:'A',text:'4\u20136 L/min \u2014 matching or slightly exceeding normal resting CO',rec:true},{ltr:'B',text:'1\u20132 L/min \u2014 the LVAD only supplements a small amount'},{ltr:'C',text:'8\u201310 L/min \u2014 double the normal for a safety margin'},{ltr:'D',text:'12\u201315 L/min \u2014 the more flow the better'}],
+    fb:"Clinical guideline: 4\u20136 L/min. Restore what was lost \u2014 not double it. Excessive flow risks pulling more blood than the ventricle can supply (suction events)."},
+  C3:{q:"CVP reflects right heart function and fluid status. The LVAD unloads the left ventricle, but the right ventricle must handle venous return on its own. What CVP range indicates adequate right heart function without congestion?",
+    opts:[{ltr:'A',text:'15\u201320 mmHg \u2014 elevated to ensure right heart filling'},{ltr:'B',text:'0\u20132 mmHg \u2014 as close to zero as possible'},{ltr:'C',text:'25\u201330 mmHg \u2014 high pressure to push blood through lungs'},{ltr:'D',text:'6\u201312 mmHg \u2014 normal range, adequate filling without congestion',rec:true}],
+    fb:"Clinical guideline: 6\u201312 mmHg. The right heart is the LVAD\u2019s Achilles heel \u2014 it\u2019s on its own, and rising CVP is the first sign it\u2019s failing under the new hemodynamic conditions."},
+  C4:{q:"PCWP reflects how well the LVAD is unloading the left ventricle. Before implant, this patient\u2019s PCWP was 30 mmHg (causing pulmonary edema). What PCWP target indicates successful unloading?",
+    opts:[{ltr:'A',text:'25\u201330 mmHg \u2014 same as before, the lungs adapted'},{ltr:'B',text:'0\u20132 mmHg \u2014 completely empty the left side'},{ltr:'C',text:'12\u201318 mmHg \u2014 reduced to near-normal, effective unloading',rec:true},{ltr:'D',text:'35\u201340 mmHg \u2014 increase filling to maximize output'}],
+    fb:"Clinical guideline: 12\u201318 mmHg. Down from 30 \u2014 lungs are clearing. Not zero (the ventricle still needs some filling to function and avoid suction)."},
+  C5:{q:"SvO\u2082 measures oxygen remaining in blood after tissue extraction. In a healthy person, SvO\u2082 is approximately 65\u201375%. If the LVAD provides sufficient flow, what SvO\u2082 would you expect?",
+    opts:[{ltr:'A',text:'30\u201340% \u2014 tissues in HF are adapted to low oxygen'},{ltr:'B',text:'95\u2013100% \u2014 blood should return fully oxygenated'},{ltr:'C',text:'10\u201320% \u2014 venous blood should have very little oxygen'},{ltr:'D',text:'65\u201375% \u2014 normal, indicating adequate oxygen delivery',rec:true}],
+    fb:"Clinical guideline: 65\u201375%. That\u2019s venous saturation \u2014 not arterial (which is 95\u2013100%). If tissues are getting enough oxygen delivery, they extract a normal fraction and SvO\u2082 stays in range."},
+  C6:{q:"Serum creatinine reflects kidney function. Before LVAD, this patient\u2019s creatinine was 2.5 mg/dL (elevated from poor renal perfusion). What level indicates restored kidney perfusion?",
+    opts:[{ltr:'A',text:'4.0\u20135.0 mg/dL \u2014 kidneys in HF never recover'},{ltr:'B',text:'0.8\u20131.2 mg/dL \u2014 return toward normal range',rec:true},{ltr:'C',text:'0.0 mg/dL \u2014 creatinine should be completely eliminated'},{ltr:'D',text:'2.5\u20133.0 mg/dL \u2014 same as before, permanent damage'}],
+    fb:"Clinical guideline: 0.8\u20131.2 mg/dL. Kidneys can recover when perfusion is restored. 0.0 is impossible \u2014 creatinine is a normal metabolic product from muscle."},
+  C7:{q:"Lactate rises when tissues switch to anaerobic metabolism from inadequate oxygen delivery. Normal is < 2 mmol/L. In cardiogenic shock, lactate reaches 6\u201310 mmol/L. After LVAD restores flow, what is the target?",
+    opts:[{ltr:'A',text:'Less than 2 mmol/L \u2014 normal, adequate perfusion',rec:true},{ltr:'B',text:'4\u20136 mmol/L \u2014 some stress is acceptable with a pump'},{ltr:'C',text:'8\u201310 mmol/L \u2014 same as cardiogenic shock'},{ltr:'D',text:'0.0 mmol/L \u2014 eliminate all lactate production'}],
+    fb:"Clinical guideline: < 2 mmol/L. Lactate is the canary in the coal mine \u2014 it tells you RIGHT NOW if tissues are starving."},
+  C8:{q:"Before LVAD, resting HR was 110 bpm due to chronic sympathetic compensation for low stroke volume. If the LVAD restores adequate CO, what should happen to heart rate?",
+    opts:[{ltr:'A',text:'Decrease toward 70\u201390 bpm as compensatory drive relaxes',rec:true},{ltr:'B',text:'Stay at 110 bpm \u2014 sympathetic activation is irreversible'},{ltr:'C',text:'Increase to 130\u2013140 bpm from extra pump volume'},{ltr:'D',text:'Drop to 30\u201340 bpm \u2014 LVAD replaces all function'}],
+    fb:"Clinical guideline: 70\u201390 bpm. If CO is restored, the body\u2019s alarm signal (elevated HR) should quiet down."},
+  C9:{q:"Total CO is 5 L/min: pump provides 4, native heart 1. Over 3 months, native heart increases to 2 L/min while total stays at 5. What does this suggest?",
+    opts:[{ltr:'A',text:'The LVAD is malfunctioning'},{ltr:'B',text:'The patient is getting worse'},{ltr:'C',text:'The native heart may be recovering, allowing pump speed reduction',rec:true},{ltr:'D',text:'Nothing meaningful \u2014 random variation'}],
+    fb:"This shift suggests myocardial recovery. Total output is stable. The native heart is contributing more. The pump is doing less."},
+  C10:{q:"The LVAD patient\u2019s aortic valve has not opened in 4 weeks \u2014 the pump does ALL the work. Why is this a problem?",
+    opts:[{ltr:'A',text:'Blood pressure is too high'},{ltr:'B',text:'Prolonged closure causes blood stasis \u2192 clot risk and valve fusion',rec:true},{ltr:'C',text:'The patient is exercising too much'},{ltr:'D',text:'The LVAD is about to fail mechanically'}],
+    fb:"Stagnant blood clots. The LVAD isn\u2019t failing \u2014 it\u2019s working too well, preventing native ejection. Clinicians adjust pump speed to allow intermittent valve opening."},
+  C11:{q:"Pulsatility index (PI) is 2.0 on Monday. By Friday it drops to 0.5 with no pump speed change. What does this suggest?",
+    opts:[{ltr:'A',text:'The heart is recovering and pumping more strongly'},{ltr:'B',text:'The heart\u2019s contribution has decreased \u2014 contracting more weakly',rec:true},{ltr:'C',text:'Pump speed increased automatically'},{ltr:'D',text:'Blood pressure rose, which always decreases PI'}],
+    fb:"PI dropped = less native pulsation. The heart is contributing less. This is declining function, not recovery."},
+  C12:{q:"Before LVAD, LVEDD was 7.5 cm (severely dilated; normal 3.5\u20135.6 cm). After 2 months, what change indicates effective unloading?",
+    opts:[{ltr:'A',text:'Increase to 8.5 cm'},{ltr:'B',text:'No change at 7.5 cm \u2014 size is permanently fixed'},{ltr:'C',text:'Decrease to 1.0 cm \u2014 drain as empty as possible'},{ltr:'D',text:'Decrease toward 5.5\u20136.5 cm \u2014 shrinking from unloading',rec:true}],
+    fb:"The ventricle is shrinking because the pump reduces volume it holds. Not 1.0 cm \u2014 that\u2019s suction risk. Slow variable \u2014 weeks to months."}
+};
+
+// ====== STATE ======
+let teamName='',gameState='waiting',ranked=[],mcqResults={},currentMcqId=null,mcqSelectedIdx=null,mcqLocked=false,shuffledPool=[],submitted=false,pollTimer=null,timerEnd=null,timerInterval=null,task2Init=false;
+
+// ====== SCREENS ======
+const ALL_SCREENS=['scrReg','scrWait','scrTask','scrDone'];
+function showScreen(id){
+  ALL_SCREENS.forEach(s=>{
+    const el=document.getElementById(s);
+    if(s===id){el.classList.remove('hidden');if(s==='scrDone')el.classList.add('show')}
+    else{el.classList.add('hidden');if(s==='scrDone')el.classList.remove('show')}
+  });
+  document.getElementById('teamStrip').classList.toggle('hidden',id!=='scrTask');
+}
+
+// ====== API (JSONP) ======
+let cbCount=0;
+function api(action,params,cb){
+  const name='_t2cb'+(cbCount++);
+  window[name]=function(d){delete window[name];if(cb)cb(d)};
+  let url=BACKEND+'?callback='+name+'&action='+action;
+  if(params)for(const k in params)url+='&'+encodeURIComponent(k)+'='+encodeURIComponent(params[k]);
+  const s=document.createElement('script');s.src=url;s.onerror=()=>{delete window[name]};
+  document.body.appendChild(s);
+  setTimeout(()=>{if(s.parentNode)s.parentNode.removeChild(s)},10000);
+}
+
+// ====== REGISTRATION ======
+function joinGroup(num){
+  const name='Group '+num;const err=document.getElementById('regErr');
+  document.querySelectorAll('.group-btn').forEach(b=>{b.disabled=true;b.style.opacity='0.4'});
+  const btns=document.querySelectorAll('.group-btn');
+  btns[num-1].classList.add('picked');btns[num-1].style.opacity='1';
+
+  api('registerTeam',{teamName:name},function(data){
+    if(data.error){
+      err.textContent=data.error;err.style.display='block';
+      document.querySelectorAll('.group-btn').forEach(b=>{b.disabled=false;b.style.opacity='1';b.classList.remove('picked')});
+      return;
+    }
+    teamName=data.teamName;
+    sessionStorage.setItem('studio2_t2_group',num);
+    document.getElementById('waitBadge').textContent=teamName;
+    document.getElementById('teamBadge').textContent=teamName;
+    if(gameState==='task2'&&!submitted){showScreen('scrTask');initTask2()}
+    else if(gameState==='task2_done'){showScreen('scrDone')}
+    else{showScreen('scrWait')}
+    startPolling();
+  });
+}
+function restoreSession(){const s=sessionStorage.getItem('studio2_t2_group');if(s)joinGroup(parseInt(s))}
+
+// ====== POLLING ======
+function startPolling(){if(pollTimer)return;pollTimer=setInterval(pollState,POLL_MS);pollState()}
+function pollState(){api('getState',null,handleState)}
+function handleState(d){
+  if(d.error)return;
+  const newState=d.game_state||'waiting';
+  const wasTask2=gameState==='task2';
+  gameState=newState;
+
+  // Freeze
+  const frozen=d.freeze===true||d.freeze==='true';
+  document.getElementById('frozenOverlay').classList.toggle('show',frozen);
+
+  // Timer
+  if(d.timer_end){
+    timerEnd=new Date(d.timer_end).getTime();
+    document.getElementById('timerDisplay').classList.remove('hidden');
+    if(!timerInterval){timerInterval=setInterval(updateTimer,500);updateTimer()}
+  }else{
+    timerEnd=null;
+    if(timerInterval){clearInterval(timerInterval);timerInterval=null}
+    document.getElementById('timerDisplay').classList.add('hidden');
+    document.getElementById('timerFill').style.width='100%';
+  }
+
+  if(!teamName)return;
+  if(newState==='task2'&&!submitted){if(!wasTask2){showScreen('scrTask');initTask2()}}
+  else if(newState==='task2_done'||submitted){showScreen('scrDone')}
+  else{showScreen('scrWait')}
+}
+function updateTimer(){
+  if(!timerEnd)return;
+  const rem=Math.max(0,timerEnd-Date.now());
+  const mins=Math.floor(rem/60000),secs=Math.floor((rem%60000)/1000);
+  const el=document.getElementById('timerDisplay');
+  el.textContent=mins+':'+String(secs).padStart(2,'0');
+  el.className='timer-display'+(rem<60000&&rem>0?' urgent':'');
+  document.getElementById('timerFill').style.width=(rem>0?Math.max(0,(rem/600000)*100):0)+'%';
+}
+
+// ====== TASK 2 INIT ======
+function initTask2(){
+  if(task2Init)return;task2Init=true;
+  shuffledPool=[...CONSTRAINTS];
+  for(let i=shuffledPool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[shuffledPool[i],shuffledPool[j]]=[shuffledPool[j],shuffledPool[i]]}
+  renderPool();renderRankSlots();updateProgress();
+}
+
+// ====== RENDER POOL ======
+function renderPool(){
+  const pool=document.getElementById('pool');
+  const avail=shuffledPool.filter(c=>!ranked.find(r=>r.id===c.id));
+  if(avail.length===0){pool.innerHTML='<div class="pool-empty">All constraints ranked \u2713</div>';return}
+  pool.innerHTML=avail.map(c=>`
+    <div class="chip" data-id="${c.id}" draggable="true" ondragstart="dragStart(event)" onclick="chipClick('${c.id}')">
+      <div class="cid">${c.id}</div>
+      <div><div class="cname">${c.name}</div><div class="ctype">${c.type}</div></div>
+    </div>`).join('');
+}
+
+// ====== RENDER RANK SLOTS ======
+function renderRankSlots(){
+  const list=document.getElementById('rankList');let html='';
+  for(let i=1;i<=12;i++){
+    const r=ranked.find(x=>x.rank===i);
+    if(r){
+      const c=CONSTRAINTS.find(x=>x.id===r.id);
+      const mcq=mcqResults[r.id];
+      let btnCls='rank-mcq-btn pending',btnTxt='Quantify \u2192',slotCls='rank-slot occupied';
+      if(mcq){
+        if(mcq.matchesGuideline){btnCls='rank-mcq-btn match';btnTxt='\u2713 Guideline';slotCls+=' mcq-match'}
+        else{btnCls='rank-mcq-btn differ';btnTxt='\u25B3 Differs';slotCls+=' mcq-differ'}
+      }
+      html+=`<div class="${slotCls}" data-rank="${i}" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropOnSlot(event,${i})">
+        <div class="rank-arrows"><button class="rank-arrow" onclick="moveRank(${i},-1)" ${i===1?'disabled style="opacity:.2"':''}>\u25B2</button><button class="rank-arrow" onclick="moveRank(${i},1)" ${i===ranked.length?'disabled style="opacity:.2"':''}>\u25BC</button></div>
+        <div class="rank-num">${i}</div>
+        <div class="rank-content"><span class="rank-cid">${c.id}</span>${c.short}</div>
+        <button class="${btnCls}" onclick="openMcq('${r.id}')">${btnTxt}</button>
+        <div class="rank-remove" onclick="removeFromRank(${i})" title="Remove">\u2715</div></div>`;
+    }else if(i<=ranked.length+1){
+      html+=`<div class="rank-slot" data-rank="${i}" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropOnSlot(event,${i})">
+        <div class="rank-num">${i}</div><div class="rank-content">${ranked.length===0?'Tap or drag a constraint here':'Next\u2026'}</div></div>`;
+      break;
+    }
+  }
+  list.innerHTML=html;
+}
+
+// ====== DRAG & DROP ======
+function dragStart(e){e.dataTransfer.setData('text/plain',e.currentTarget.dataset.id);e.currentTarget.classList.add('dragging');setTimeout(()=>e.currentTarget.classList.remove('dragging'),200)}
+function dragOver(e){e.preventDefault();e.currentTarget.classList.add('dragover')}
+function dragLeave(e){e.currentTarget.classList.remove('dragover')}
+function dropOnSlot(e,rank){e.preventDefault();e.currentTarget.classList.remove('dragover');const id=e.dataTransfer.getData('text/plain');if(id)addToRank(id,rank)}
+
+// ====== TAP TO ADD ======
+function chipClick(id){if(ranked.find(r=>r.id===id))return;addToRank(id,ranked.length+1)}
+
+// ====== ADD / REMOVE / REORDER ======
+function addToRank(id,rank){
+  if(ranked.find(r=>r.id===id))return;if(ranked.length>=12)return;
+  rank=Math.min(rank,ranked.length+1);ranked.push({id,rank});reindex();renderAll();
+}
+function removeFromRank(rank){ranked=ranked.filter(r=>r.rank!==rank);reindex();renderAll()}
+function moveRank(from,dir){
+  const to=from+dir;if(to<1||to>ranked.length)return;
+  const a=ranked.find(r=>r.rank===from),b=ranked.find(r=>r.rank===to);
+  if(a)a.rank=to;if(b)b.rank=from;renderAll();
+}
+function reindex(){ranked.sort((a,b)=>a.rank-b.rank);ranked.forEach((r,i)=>r.rank=i+1)}
+function renderAll(){renderPool();renderRankSlots();updateProgress()}
+
+// ====== MCQ OVERLAY ======
+function openMcq(id){
+  currentMcqId=id;mcqSelectedIdx=null;mcqLocked=false;
+  const c=CONSTRAINTS.find(x=>x.id===id),m=T2MCQ[id],prev=mcqResults[id];
+  document.getElementById('mcqHdr').textContent='Quantify: '+c.name;
+  document.getElementById('mcqQuestion').textContent=m.q;
+
+  if(prev){
+    const recIdx=m.opts.findIndex(o=>o.rec),prevIdx=m.opts.findIndex(o=>o.ltr===prev.answer);
+    document.getElementById('mcqOpts').innerHTML=m.opts.map((o,i)=>{
+      let cls='mcq-opt',badges='';
+      if(i===recIdx&&prev.matchesGuideline){cls+=' yours-match';badges='<span class="mcq-badge-inline you-match">Your Pick \u00B7 Recommended</span>'}
+      else if(i===recIdx){cls+=' recommended';badges='<span class="mcq-badge-inline rec">Recommended</span>'}
+      else if(i===prevIdx){cls+=' yours-differ';badges='<span class="mcq-badge-inline you">Your Pick</span>'}
+      else{cls+=' dimmed'}
+      return `<div class="${cls}"><span class="ltr">${o.ltr}</span><span>${o.text} ${badges}</span></div>`;
+    }).join('');
+    document.getElementById('mcqFb').className='mcq-fb show';
+    document.getElementById('mcqFb').textContent=m.fb;
+    document.getElementById('mcqSubmitBtn').classList.add('hidden');
+    document.getElementById('mcqDoneBtn').classList.remove('hidden');
+  }else{
+    document.getElementById('mcqOpts').innerHTML=m.opts.map((o,i)=>
+      `<div class="mcq-opt" data-idx="${i}" onclick="mcqSelect(${i})"><span class="ltr">${o.ltr}</span><span>${o.text}</span></div>`
+    ).join('');
+    document.getElementById('mcqFb').className='mcq-fb';
+    document.getElementById('mcqFb').removeAttribute('style');
+    document.getElementById('mcqSubmitBtn').disabled=true;
+    document.getElementById('mcqSubmitBtn').classList.remove('hidden');
+    document.getElementById('mcqDoneBtn').classList.add('hidden');
+  }
+  document.getElementById('mcqOverlay').classList.add('show');
+}
+function mcqSelect(idx){
+  if(mcqLocked)return;mcqSelectedIdx=idx;
+  document.querySelectorAll('.mcq-opt').forEach((el,i)=>el.classList.toggle('selected',i===idx));
+  document.getElementById('mcqSubmitBtn').disabled=false;
+}
+function mcqSubmit(){
+  if(mcqSelectedIdx===null||mcqLocked)return;mcqLocked=true;
+  const m=T2MCQ[currentMcqId],chosen=m.opts[mcqSelectedIdx],recIdx=m.opts.findIndex(o=>o.rec);
+  const matchesGuideline=!!chosen.rec;
+  mcqResults[currentMcqId]={answer:chosen.ltr,matchesGuideline};
+  const opts=document.querySelectorAll('.mcq-opt'),fb=document.getElementById('mcqFb');
+  opts.forEach((el,i)=>{
+    el.classList.remove('selected');el.style.cursor='default';el.onclick=null;
+    if(matchesGuideline&&i===mcqSelectedIdx){el.classList.add('yours-match');el.innerHTML=`<span class="ltr">${m.opts[i].ltr}</span><span>${m.opts[i].text} <span class="mcq-badge-inline you-match">Your Pick \u00B7 Recommended</span></span>`}
+    else if(i===recIdx){el.classList.add('recommended');el.innerHTML=`<span class="ltr">${m.opts[i].ltr}</span><span>${m.opts[i].text} <span class="mcq-badge-inline rec">Recommended</span></span>`}
+    else if(i===mcqSelectedIdx){el.classList.add('yours-differ');el.innerHTML=`<span class="ltr">${m.opts[i].ltr}</span><span>${m.opts[i].text} <span class="mcq-badge-inline you">Your Pick</span></span>`}
+    else{el.classList.add('dimmed')}
+  });
+  fb.className='mcq-fb show';fb.textContent=m.fb;
+  document.getElementById('mcqSubmitBtn').classList.add('hidden');
+  document.getElementById('mcqDoneBtn').classList.remove('hidden');
+}
+function mcqDone(){document.getElementById('mcqOverlay').classList.remove('show');renderRankSlots();updateProgress()}
+
+// ====== PROGRESS ======
+function updateProgress(){
+  const rc=ranked.length,mc=Object.keys(mcqResults).length;
+  const c1=document.getElementById('con1').value.trim(),c2=document.getElementById('con2').value.trim();
+  document.getElementById('rankCount').textContent=rc+' / 12';
+  document.getElementById('rankFill').style.width=(rc/12*100)+'%';
+  document.getElementById('mcqCount').textContent=mc+' / 12';
+  document.getElementById('mcqFill').style.width=(mc/12*100)+'%';
+  const allR=rc===12,allM=mc===12,hasCon=c1.length>0&&c2.length>0;
+  document.getElementById('chkRank').className='check-item'+(allR?' done':'');
+  document.getElementById('chkRank').textContent=(allR?'\u2713':'\u2610')+' All 12 ranked';
+  document.getElementById('chkMcq').className='check-item'+(allM?' done':'');
+  document.getElementById('chkMcq').textContent=(allM?'\u2713':'\u2610')+' All 12 quantified';
+  document.getElementById('chkCon').className='check-item'+(hasCon?' done':'');
+  document.getElementById('chkCon').textContent=(hasCon?'\u2713':'\u2610')+' 2+ considerations';
+  document.getElementById('submitBtn').disabled=!(allR&&allM&&hasCon);
+}
+document.querySelectorAll('.consider-input').forEach(el=>el.addEventListener('input',updateProgress));
+
+// ====== SUBMIT TO BACKEND ======
+function doSubmit(){
+  if(submitted)return;
+  document.getElementById('submitBtn').disabled=true;
+  document.getElementById('submitBtn').textContent='SUBMITTING\u2026';
+  ranked.sort((a,b)=>a.rank-b.rank);
+  const payload=ranked.map(r=>({id:r.id,rank:r.rank,mcq:mcqResults[r.id]?mcqResults[r.id].answer:'',correct:mcqResults[r.id]?mcqResults[r.id].matchesGuideline:false}));
+  const cons=[];
+  ['con1','con2','con3'].forEach(id=>{const v=document.getElementById(id).value.trim();if(v)cons.push(v)});
+
+  api('submitTask2Ranking',{teamName:teamName,rankings:encodeURIComponent(JSON.stringify(payload))},function(rd){
+    api('submitTask2Considers',{teamName:teamName,considerations:encodeURIComponent(JSON.stringify(cons))},function(cd){
+      submitted=true;showDoneScreen();
+    });
+  });
+}
+function showDoneScreen(){
+  const summary=document.getElementById('doneSummary');
+  let html='<h3>Your Ranking</h3>';
+  for(const r of ranked){
+    const c=CONSTRAINTS.find(x=>x.id===r.id),mcq=mcqResults[r.id];
+    const cls=mcq&&mcq.matchesGuideline?'match':'differ';
+    const txt=mcq&&mcq.matchesGuideline?'\u2713 Guideline':'\u25B3 Differs';
+    html+=`<div class="done-rank-item"><div class="dnum">${r.rank}</div><div class="dname">${c.id} \u2014 ${c.short}</div><div class="dmcq ${cls}">${txt}</div></div>`;
+  }
+  summary.innerHTML=html;showScreen('scrDone');window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ====== INIT ======
+restoreSession();
+</script>
+</body>
+</html>
