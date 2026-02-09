@@ -30,6 +30,10 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;back
 .state-badge{font-family:var(--font-head);font-size:.85rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:8px 18px;border-radius:6px;border:1px solid var(--border);color:var(--text3)}
 .state-badge.task2{color:var(--gold);border-color:var(--gold);background:rgba(201,168,76,.06)}
 .state-badge.task2_done{color:var(--green);border-color:var(--green);background:var(--green-dim)}
+.ended-banner{display:none;background:linear-gradient(135deg,rgba(52,199,105,.12),rgba(52,199,105,.04));border:2px solid var(--green);border-radius:10px;padding:18px 24px;text-align:center;margin-bottom:20px}
+.ended-banner.show{display:block}
+.ended-banner h2{font-family:var(--font-head);font-size:1.4rem;color:var(--green);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+.ended-banner p{color:var(--text2);font-size:.88rem}
 .state-badge.waiting{color:var(--text3);border-color:var(--text3)}
 .state-badge.task1{color:var(--red-bright);border-color:var(--red);background:var(--red-dim)}
 .state-badge.task1_done{color:var(--gold);border-color:var(--gold);background:rgba(201,168,76,.06)}
@@ -147,6 +151,12 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;back
 
   <!-- DEMO BANNER -->
   <div class="demo-banner" id="demoBanner">🎭 DEMO MODE — Simulated data. Open projector_2.html in another tab to see the student view.</div>
+
+  <!-- ENDED BANNER -->
+  <div class="ended-banner" id="endedBanner">
+    <h2>✅ Task 2 Complete</h2>
+    <p>All student screens are locked. Use the projector controls below to walk through the reveal.</p>
+  </div>
 
   <!-- GAME CONTROLS + TIMER -->
   <div class="panels">
@@ -317,6 +327,10 @@ function handleState(d) {
   const badge = document.getElementById('stateBadge');
   badge.textContent = currentState.toUpperCase().replace('_',' ');
   badge.className = 'state-badge ' + currentState;
+
+  // Ended banner
+  var eb = document.getElementById('endedBanner');
+  if (eb) eb.className = currentState === 'task2_done' ? 'ended-banner show' : 'ended-banner';
 
   // Freeze
   frozen = d.freeze === true || d.freeze === 'true';
