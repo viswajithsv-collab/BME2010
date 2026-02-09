@@ -478,12 +478,19 @@ function doToggleFreeze() {
 
 function doEndTask1() {
   if (!confirm('End Task 1? This will stop the game and show the "All Teams Finished" screen on the projector.')) return;
-  // Clear freeze, clear timer, set state to task1_done
-  api('setFreeze', { frozen: 'false' }, function() {});
-  api('clearTimer', null, function() {});
-  api('setState', { state: 'task1_done' }, function(d) {
-    if (d.error) { alert('Error: ' + d.error); return; }
-    pollAll();
+  // Clear freeze first
+  api('setFreeze', { frozen: 'false' }, function() {
+    // Clear timer
+    api('clearTimer', null, function() {
+      // Set state to task1_done
+      api('setState', { state: 'task1_done' }, function(d) {
+        if (d.error) {
+          alert('Error setting state: ' + d.error + '\n\nDid you redeploy the Apps Script with task1_done in the valid states list?');
+          return;
+        }
+        pollAll();
+      });
+    });
   });
 }
 
