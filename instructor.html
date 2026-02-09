@@ -78,9 +78,9 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .race-cascade.none{background:var(--bg);color:var(--text3);border:1px solid var(--border)}
 .race-pips{display:flex;gap:4px;flex:1}
 .race-pip{height:24px;flex:1;border-radius:4px;background:var(--border);transition:all .4s}
-.race-pip.done{background:var(--green)}
-.race-pip.active{background:var(--red);box-shadow:0 0 8px rgba(196,30,58,.3)}
-.race-pip.done-A{background:var(--red-bright)}.race-pip.done-B{background:var(--blue)}.race-pip.done-C{background:var(--purple)}
+.race-pip.correct{background:#2323FF}
+.race-pip.wrong{background:#ED2100}
+.race-pip.active{background:#FF5C00;box-shadow:0 0 8px rgba(255,92,0,.3)}
 .race-check{font-size:.9rem;flex-shrink:0;width:24px;text-align:center}
 
 /* STATS */
@@ -324,14 +324,14 @@ function updateTimer() {
 
 function handleProgress(d) {
   if (d.error || demoMode) return;
-  renderRace(d.progress || []);
+  renderRace(d.progress || [], d.teamResponses || {});
   renderStats(d.stageStats || {});
   renderLog(d.teamResponses || {});
   renderResults(d.progress || [], d.teamResponses || {});
 }
 
 // ==================== RACE TRACKER ====================
-function renderRace(progress) {
+function renderRace(progress, teamResponses) {
   const container = document.getElementById('raceTracker');
   let html = '';
 
@@ -347,11 +347,21 @@ function renderRace(progress) {
     const stage = team.stage || 0;
     const complete = team.complete;
 
+    // Build per-stage correctness from first attempt
+    const responses = teamResponses[team.teamName] || [];
+    const firstAttempt = {};
+    for (const r of responses) {
+      if (!(r.stage in firstAttempt)) firstAttempt[r.stage] = r.correct;
+    }
+
     let pips = '';
     for (let s = 1; s <= 5; s++) {
       let cls = 'race-pip';
-      if (complete || s < stage) cls += ' done done-' + casc;
-      else if (s === stage) cls += ' active';
+      if (complete || s < stage) {
+        cls += firstAttempt[s] === true ? ' correct' : firstAttempt[s] === false ? ' wrong' : ' correct';
+      } else if (s === stage) {
+        cls += ' active';
+      }
       pips += `<div class="${cls}" title="Stage ${s}: ${STAGE_LABELS[s-1]}"></div>`;
     }
 
@@ -611,7 +621,7 @@ function demoTick() {
     t._elapsed = 0;
 
     // Answer current stage
-    const correct = Math.random() > 0.25; // 75% accuracy
+    const correct = Math.random() > 0.3; // 70% accuracy
     const letters = ['A','B','C','D'];
     const correctLetter = letters[Math.floor(Math.random() * 4)];
     const selectedLetter = correct ? correctLetter : letters.filter(l => l !== correctLetter)[Math.floor(Math.random() * 3)];
@@ -623,27 +633,11 @@ function demoTick() {
       correct: correct
     });
 
-    if (correct) {
-      if (t.stage >= 5) {
-        t.complete = true;
-      } else {
-        t.stage++;
-      }
-    }
-    // If wrong, they stay on same stage but next tick will try again
-    // (simulates the reveal + move on behavior — just advance them)
-    if (!correct) {
-      t.responses.push({
-        stage: t.stage,
-        questionId: t.cascade + t.stage + '-Q' + (Math.floor(Math.random()*3)+1),
-        selectedLetter: correctLetter,
-        correct: true // the reveal
-      });
-      if (t.stage >= 5) {
-        t.complete = true;
-      } else {
-        t.stage++;
-      }
+    // Always advance (wrong = saw the reveal, moves on)
+    if (t.stage >= 5) {
+      t.complete = true;
+    } else {
+      t.stage++;
     }
   }
 
@@ -677,7 +671,7 @@ function demoRender() {
     }
   }
 
-  renderRace(progress);
+  renderRace(progress, teamResponses);
   renderStats(stageStats);
   renderLog(teamResponses);
   renderResults(progress, teamResponses);
