@@ -565,6 +565,18 @@ function submitAnswer() {
     correct: isCorrect ? 'true' : 'false'
   });
 
+  // If wrong, also log the correct answer and force advance
+  // (student sees correct answer and moves on regardless)
+  if (!isCorrect) {
+    api('submitTask1', {
+      teamName: teamName,
+      stage: currentStage + 1,
+      questionId: qId,
+      selectedLetter: q.o[correctIdx].ltr,
+      correct: 'true'
+    });
+  }
+
   if (isCorrect) {
     opts[selectedIdx].classList.remove('selected');
     opts[selectedIdx].classList.add('correct');
