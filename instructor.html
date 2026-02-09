@@ -35,6 +35,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .state-badge.task1{color:var(--red-bright);border-color:var(--red);background:var(--red-dim)}
 .state-badge.task2{color:var(--gold);border-color:var(--gold-dim);background:rgba(201,168,76,.06)}
 .state-badge.finished{color:var(--green);border-color:var(--green);background:var(--green-dim)}
+.state-badge.task1_done{color:var(--gold);border-color:var(--gold);background:rgba(201,168,76,.06)}
 
 /* PANELS */
 .panels{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px}
@@ -149,6 +150,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
         <button class="btn btn-gold" onclick="doAssignCascades()">Assign Cascades</button>
         <button class="btn btn-red" id="startBtn" onclick="doSetState('task1')">Start Bad Blood</button>
         <button class="btn btn-out" id="freezeBtn" onclick="doToggleFreeze()">⏸ Freeze</button>
+        <button class="btn btn-red" onclick="doEndTask1()" style="background:#8b0000">⏹ End Task 1</button>
       </div>
       <div class="ctrl-row" style="margin-top:10px">
         <button class="btn btn-out" onclick="doSetState('waiting')">⟵ Waiting</button>
@@ -458,6 +460,17 @@ function doSetState(state) {
 
 function doToggleFreeze() {
   api('setFreeze', { frozen: frozen ? 'false' : 'true' }, function(d) {
+    if (d.error) { alert('Error: ' + d.error); return; }
+    pollAll();
+  });
+}
+
+function doEndTask1() {
+  if (!confirm('End Task 1? This will stop the game and show the "All Teams Finished" screen on the projector.')) return;
+  // Clear freeze, clear timer, set state to task1_done
+  api('setFreeze', { frozen: 'false' }, function() {});
+  api('clearTimer', null, function() {});
+  api('setState', { state: 'task1_done' }, function(d) {
     if (d.error) { alert('Error: ' + d.error); return; }
     pollAll();
   });
