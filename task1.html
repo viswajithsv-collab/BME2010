@@ -30,6 +30,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .hdr h1{font-family:var(--font-head);font-size:2.6rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;line-height:1.05}
 .hdr h1 span{color:var(--red-bright)}
 .hdr-sub{font-size:.92rem;color:var(--text2);font-style:italic;margin-top:8px}
+/* SUBTITLE TEXT: Engineering a Fix for a Faltering Rhythm */
 
 /* ===== REGISTRATION ===== */
 .reg{max-width:520px;margin:0 auto;text-align:center;padding:48px 0}
@@ -216,7 +217,7 @@ const BACKEND = 'https://script.google.com/macros/s/AKfycbx_pEtSHZpfoCO--fsUljx0
 const POLL_MS = 2500;
 
 // ============================================================
-// DATA: MCQ BANK (30 questions — 3 cascades × 5 stages × 2 questions)
+// DATA: MCQ BANK (45 questions)
 // ============================================================
 const MCQ = {
 // --- CASCADE A: THE REMODELED ATRIUM (→ Atrial Fibrillation) ---
@@ -230,7 +231,6 @@ const MCQ = {
 'A4-Q2':{s:4,l:'Short-Term Consequence',cv:1,clue:`The patient feels their heart racing and skipping — palpitations. They're dizzy when they stand up. They get winded walking up stairs. Here's why: the ventricles are receiving signals at random intervals — sometimes two beats almost on top of each other, sometimes a long pause. This irregularity means some beats pump a full load and some pump almost nothing. The average output drops.`,q:`Why does the irregular ventricular response in AFib reduce cardiac output?`,o:[{ltr:'A',text:`Because the heart valves are damaged and leaking blood backward`},{ltr:'B',text:`Because the ventricles don't have consistent filling time — short intervals mean the ventricle pumps before it's full, and the average stroke volume drops`,c:1},{ltr:'C',text:`Because the sympathetic nervous system shuts down during AFib`},{ltr:'D',text:`Because the coronary arteries spasm and reduce blood supply to the heart muscle`}],fb:`Irregular R-R intervals = inconsistent filling time. Some beats eject a full load, some eject almost nothing. Average CO drops.`},
 'A5-Q1':{s:5,l:'Long-Term Consequence',clue:`Here's the cruelest part: AFib changes the atrium in ways that make more AFib. The fast chaotic signals shorten the refractory period of atrial cells — so they can fire again sooner, sustaining the chaos. The stretched walls develop more fibrosis — more scar, more disorganized conduction. The longer AFib persists, the harder it is to stop. Doctors have a saying for this: "AFib begets AFib."`,q:`Why does atrial fibrillation become harder to treat over time?`,o:[{ltr:'A',text:`Because the medications used to treat AFib stop working after a few months`},{ltr:'B',text:`Because the heart develops immunity to electrical cardioversion`},{ltr:'C',text:`Because AFib itself causes further electrical and structural remodeling of the atrium — shortened refractory periods and more fibrosis — creating a substrate that sustains the arrhythmia`,c:1},{ltr:'D',text:`Because the SA node permanently dies after prolonged AFib`}],fb:`"AFib begets AFib" — the arrhythmia remodels the tissue in ways that make it self-perpetuating.`},
 'A5-Q2':{s:5,l:'Long-Term Consequence',cv:1,clue:`Years of AFib. The atrium is permanently remodeled. The ventricles, driven at irregular high rates for too long, have started to weaken — tachycardia-induced cardiomyopathy. The stroke risk is constant. Medications have been tried and failed. The patient needs something more: a procedure to burn out the rogue circuits, or a device to monitor and control the rhythm, or both. The biology alone can't fix this anymore.`,q:`What does this patient's situation demonstrate about arrhythmia management?`,o:[{ltr:'A',text:`All arrhythmias eventually resolve on their own if you wait long enough`},{ltr:'B',text:`Drug therapy is always sufficient for any cardiac arrhythmia`},{ltr:'C',text:`The only option remaining is a heart transplant`},{ltr:'D',text:`When the heart's electrical system has remodeled beyond the point of self-correction or pharmacological control, device-based or procedural intervention becomes necessary`,c:1}],fb:`When biology fails, engineering steps in — ablation, devices, or both. The heart's electrical system cannot self-regulate.`},
-
 // --- CASCADE B: THE SHORT CIRCUIT (→ Ventricular Tachycardia / Fibrillation) ---
 'B1-Q1':{s:1,l:'Cause',clue:`A city's electrical grid took damage during a storm years ago. The repair crew patched the broken section with cheap material that conducts electricity — but slowly. The rest of the grid runs at full speed. Now you've got a city where electricity races through the good neighborhoods but crawls through the patched zone. Most of the time it works fine. But the speed mismatch is a ticking time bomb.`,q:`What is the "patched zone" in the heart?`,o:[{ltr:'A',text:`A thickened heart valve that partially blocks blood flow`},{ltr:'B',text:`Scar tissue in the ventricle from a previous heart attack — it conducts electrical signals slowly, creating a speed mismatch with surrounding healthy tissue`,c:1},{ltr:'C',text:`A buildup of calcium in the coronary arteries`},{ltr:'D',text:`An area of the atrium that fires too rapidly`}],fb:`Ventricular scar tissue from a prior MI — it conducts slowly, creating the substrate for reentry circuits.`},
 'B1-Q2':{s:1,l:'Cause',clue:`Imagine a running track where one lane is made of deep sand. Runners in the normal lanes sprint ahead. The runner in the sand lane falls behind. Most of the time, everyone finishes and it's fine. But the layout of the track means that under the right conditions, the fast runners could loop back and catch the slow one — and then they'd all be running in circles forever.`,q:`What creates this "sand lane" in the ventricle?`,o:[{ltr:'A',text:`A zone of scar tissue — from a prior MI or cardiomyopathy — that conducts electrical impulses more slowly than the healthy tissue surrounding it`,c:1},{ltr:'B',text:`Excess fluid in the pericardial sac compressing the heart from outside`},{ltr:'C',text:`A genetic mutation that makes all heart cells conduct slowly from birth`},{ltr:'D',text:`A blocked coronary artery that is actively starving the muscle of oxygen right now`}],fb:`Scar tissue = slow conduction lane. The speed mismatch between scar and healthy tissue creates the setup for reentry.`},
@@ -242,7 +242,6 @@ const MCQ = {
 'B4-Q2':{s:4,l:'Short-Term Consequence',cv:1,clue:`There's a critical difference between VTach and VFib. In VTach, there's still a circuit — organized, repeating, terrible — but organized. The heart is squeezing, just too fast. In VFib, even that circuit has broken down. The ventricles aren't beating — they're twitching in a thousand directions at once. No organized contraction means zero cardiac output. The clock starts: without intervention, the brain suffers irreversible damage in 4-6 minutes.`,q:`Why is VFib more immediately lethal than VTach?`,o:[{ltr:'A',text:`Because VFib affects both ventricles while VTach only affects one`},{ltr:'B',text:`Because VFib damages the heart valves while VTach does not`},{ltr:'C',text:`Because VFib produces zero organized contraction — at least VTach has a repetitive circuit generating some output, but VFib is completely chaotic with no effective pumping at all`,c:1},{ltr:'D',text:`Because VFib cannot be treated with any device or intervention`}],fb:`VTach = fast but organized. VFib = completely chaotic, zero output. VFib is cardiac arrest.`},
 'B5-Q1':{s:5,l:'Long-Term Consequence',clue:`The patient survived — thanks to a defibrillator that shocked the heart back into rhythm. But the scar tissue hasn't gone anywhere. The slow lane on the track is still there. The conditions that allowed the reentry loop to form are unchanged. It happened once. It will likely happen again. This patient needs something permanently in place — a guardian that watches every heartbeat and can deliver a life-saving shock in seconds, without waiting for paramedics.`,q:`What does this patient need for long-term protection?`,o:[{ltr:'A',text:`Lifelong blood thinners to prevent clots from forming in the ventricle`},{ltr:'B',text:`Surgical removal of the scar tissue to eliminate the conduction mismatch entirely`},{ltr:'C',text:`An implantable cardioverter-defibrillator (ICD) — a device that continuously monitors the heart rhythm and delivers a shock if VTach or VFib recurs`,c:1},{ltr:'D',text:`A pacemaker that speeds the heart up to prevent it from going too slow`}],fb:`An ICD — a device that monitors, detects, and terminates lethal rhythms automatically.`},
 'B5-Q2':{s:5,l:'Long-Term Consequence',cv:1,clue:`Cascade A's patient needs a device to monitor and control an abnormal RHYTHM in the atria. Cascade B's patient needs a device that can detect and TERMINATE a lethal rhythm in the ventricles. Different chambers, different arrhythmias, different devices — but the same engineering principle: the heart's electrical system cannot be trusted to self-regulate, so an engineered system must watch, decide, and act.`,q:`What engineering principle connects Cascade A (AFib) and Cascade B (VTach/VFib)?`,o:[{ltr:'A',text:`Both patients need the exact same device with the exact same settings`},{ltr:'B',text:`Both patients need heart transplants because devices can't treat arrhythmias`},{ltr:'C',text:`Both arrhythmias are caused by the same underlying pathology`},{ltr:'D',text:`Both cascades demonstrate that when the heart's intrinsic electrical regulation fails, engineered devices must take over the functions of sensing, deciding, and intervening`,c:1}],fb:`Sense → Decide → Act. Different devices, same engineering principle.`},
-
 // --- CASCADE C: THE BROKEN RELAY (→ Heart Block / Bradyarrhythmia) ---
 'C1-Q1':{s:1,l:'Cause',clue:`A relay station in a communication network has been running for 70 years. Most of the original staff have retired. The equipment is outdated. Messages still get through most of the time — but more and more often, they arrive late, garbled, or not at all. The relay station isn't broken, but it's unreliable. One bad day, and the whole line could go dark.`,q:`What is the "relay station" in the heart, and what is happening to it?`,o:[{ltr:'A',text:`The AV node and conduction system are gradually degenerating — functional cells are being replaced by fibrous tissue, slowing or blocking signal transmission from the atria to the ventricles`,c:1},{ltr:'B',text:`The SA node is firing too many signals, overwhelming the rest of the conduction system`},{ltr:'C',text:`The coronary arteries are narrowing, reducing blood flow to the heart muscle`},{ltr:'D',text:`The heart valves are calcifying and becoming stiff with age`}],fb:`The AV node and His-Purkinje system — the relay between atria and ventricles — degenerates with age.`},
 'C1-Q2':{s:1,l:'Cause',clue:`A fiber optic cable buried underground connects two towns. Over decades, the insulation degrades. Some fibers break. The cable still carries signal — but its capacity is a fraction of what it was. On a normal day, enough signals get through. But there's no redundancy left. One more fiber breaks, and the connection could go dark.`,q:`What part of the heart's conduction system does this cable represent?`,o:[{ltr:'A',text:`The coronary arteries that deliver blood to the heart muscle`},{ltr:'B',text:`The His-Purkinje system and AV node — the specialized conduction pathway that carries electrical signals from the atria to the ventricles, which is degenerating with age`,c:1},{ltr:'C',text:`The nerves from the brain that tell the heart how fast to beat`},{ltr:'D',text:`The muscular wall of the ventricle that contracts to pump blood`}],fb:`The His-Purkinje system — specialized conduction fibers that degrade over time.`},
@@ -260,9 +259,9 @@ const MCQ = {
 // DATA: REVEAL INFO PER CASCADE
 // ============================================================
 const REVEAL = {
-  A:{disease:'Atrial Fibrillation',nodes:['Atrial Remodeling','Ectopic Foci','AFib Onset','Stroke Risk & Reduced CO','Device/Ablation'],summary:`Chronic pressure overload remodeled the atrium until ectopic foci in the pulmonary veins hijacked the rhythm. The atria fibrillate chaotically, blood pools and clots, and cardiac output drops — <em>atrial fibrillation</em>. When biology can't restore order, engineering must: ablation, rhythm control, or both.`},
-  B:{disease:'Ventricular Tachycardia',nodes:['Ventricular Scar','PVC Trigger','Reentry Circuit','Hemodynamic Collapse','ICD Implant'],summary:`Scar tissue from a prior infarction created a slow-conduction zone. A PVC at the wrong moment initiated a reentry loop — the ventricles racing at 200+ bpm with no time to fill — <em>ventricular tachycardia</em>. An ICD now stands guard, ready to shock the circuit back to order.`},
-  C:{disease:'Complete Heart Block',nodes:['Conduction Degeneration','Drug/Electrolyte Trigger','AV Dissociation','Symptomatic Bradycardia','Pacemaker Implant'],summary:`The AV node and His-Purkinje system degenerated over decades until a trigger — a medication, an electrolyte spike — severed the last connection. The ventricles fell back on their escape rhythm: 30-40 bpm — <em>complete heart block</em>. A pacemaker now bridges the gap.`},
+  A:{disease:'Atrial Fibrillation',nodes:['Atrial Remodeling','Ectopic Foci','AFib Onset','Stroke Risk & Reduced CO','Device/Ablation'],summary:`Chronic pressure and volume overload remodeled the atrium — stretched walls, fibrosis, altered tissue properties. Ectopic foci in the pulmonary veins hijacked the rhythm, triggering chaotic fibrillation. Blood stasis creates stroke risk; irregular ventricular response drops cardiac output. When the electrical system fails, <em>engineered devices must sense, decide, and act</em>.`},
+  B:{disease:'Ventricular Tachycardia',nodes:['Ventricular Scar','PVC Trigger','Reentry Circuit','Hemodynamic Collapse','ICD Implant'],summary:`Scar tissue from a prior MI created a slow-conduction zone in the ventricle. A premature beat hit the vulnerable window, initiating a reentry loop that drove the ventricles at lethal speeds. VTach can degenerate to VFib — cardiac arrest. The patient needs an <em>ICD: a device that watches, detects, and terminates</em>.`},
+  C:{disease:'Complete Heart Block',nodes:['Conduction Degeneration','Drug/Electrolyte Trigger','AV Dissociation','Symptomatic Bradycardia','Pacemaker Implant'],summary:`The AV node and His-Purkinje system degenerated over decades. A medication or electrolyte disturbance pushed the failing relay past its limit — complete block. Atria and ventricles beat independently; the escape rhythm is too slow to sustain life. The patient needs a <em>pacemaker: an artificial relay</em>.`},
 };
 
 const STAGE_LABELS = ['Cause','Trigger','Event','Short-Term','Long-Term'];
@@ -273,7 +272,7 @@ const STAGE_TITLES = {1:'The Underlying Vulnerability',2:'The Sudden Disturbance
 // ============================================================
 let teamName = '';
 let cascade = '';
-let questionIds = [];  // e.g. ['A1-Q2','A2-Q1','A3-Q2','A4-Q1','A5-Q2']
+let questionIds = [];  // e.g. ['A1-Q2','A2-Q1','A3-Q3','A4-Q1','A5-Q2']
 let currentStage = 0;  // 0-indexed (0=stage1, 4=stage5)
 let locked = false;
 let selectedIdx = null;
@@ -335,6 +334,18 @@ function poll() {
   });
 }
 
+function onStateChange(state) {
+  if (state === 'task1' && cascade && questionIds.length > 0) {
+    showScreen('scrGame');
+    if (currentStage === 0) renderStage();
+  }
+  if (state === 'task1_done') {
+    // Force show reveal/completion regardless of where team was
+    showReveal();
+  }
+  // Future: task2, finished
+}
+
 function handleTimer(endStr, label) {
   const display = document.getElementById('timerDisplay');
   const fill = document.getElementById('timerFill');
@@ -353,35 +364,20 @@ function handleTimer(endStr, label) {
 
 function updateTimerDisplay() {
   if (!timerEnd) return;
-  const display = document.getElementById('timerDisplay');
-  const fill = document.getElementById('timerFill');
   const now = Date.now();
-  const left = Math.max(0, timerEnd - now);
-  const mins = Math.floor(left / 60000);
-  const secs = Math.floor((left % 60000) / 1000);
-  display.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
-  display.classList.toggle('urgent', left < 60000);
+  const remaining = Math.max(0, timerEnd - now);
+  const totalDuration = timerEnd - (timerEnd - remaining); // we don't know original, just show remaining
+  const mins = Math.floor(remaining / 60000);
+  const secs = Math.floor((remaining % 60000) / 1000);
+  const display = document.getElementById('timerDisplay');
+  display.textContent = mins + ':' + String(secs).padStart(2, '0');
+  display.classList.toggle('urgent', remaining < 60000);
 
-  // Estimate total duration as 10 minutes for fill bar
-  const total = 10 * 60 * 1000;
-  const pct = Math.max(0, Math.min(100, (left / total) * 100));
-  fill.style.width = pct + '%';
-}
-setInterval(updateTimerDisplay, 1000);
-
-function onStateChange(state) {
-  if (state === 'task1_active' && teamName) {
-    // Fetch assignment
-    api('getTeamAssignment', { teamName: teamName }, function(data) {
-      if (data.cascade && data.questions) {
-        cascade = data.cascade;
-        questionIds = data.questions.split(',');
-        currentStage = 0;
-        showScreen('scrGame');
-        document.getElementById('gameTeamName').textContent = teamName;
-        renderStage();
-      }
-    });
+  if (remaining > 0) {
+    setTimeout(updateTimerDisplay, 1000);
+  } else {
+    display.textContent = '0:00';
+    display.classList.add('urgent');
   }
 }
 
@@ -393,29 +389,67 @@ function showScreen(id) {
     const el = document.getElementById(s);
     if (s === id) el.classList.remove('hidden');
     else el.classList.add('hidden');
+    // Special case for done screen
+    if (s === 'scrDone') {
+      if (s === id) el.classList.add('show');
+      else el.classList.remove('show');
+    }
   });
-  if (id === 'scrDone') document.getElementById('scrDone').classList.add('show');
 }
 
-function joinGroup(n) {
-  teamName = 'Group ' + n;
-  sessionStorage.setItem('studio2_group', n);
-  document.querySelectorAll('.group-btn').forEach((btn, i) => {
-    btn.classList.toggle('picked', i === n - 1);
-  });
-  // Register with backend
-  api('registerTeam', { teamName: teamName }, function(data) {
+// ============================================================
+// REGISTRATION
+// ============================================================
+function joinGroup(num) {
+  const name = 'Group ' + num;
+  const err = document.getElementById('regErr');
+
+  // Disable all buttons
+  document.querySelectorAll('.group-btn').forEach(b => { b.disabled = true; b.style.opacity = '0.4'; });
+  const clickedBtn = document.querySelectorAll('.group-btn')[num - 1];
+  clickedBtn.classList.add('picked');
+  clickedBtn.style.opacity = '1';
+
+  api('registerTeam', { teamName: name }, function(data) {
     if (data.error) {
-      document.getElementById('regErr').textContent = data.error;
-      document.getElementById('regErr').style.display = 'block';
+      err.textContent = data.error;
+      err.style.display = 'block';
+      // Re-enable buttons
+      document.querySelectorAll('.group-btn').forEach(b => { b.disabled = false; b.style.opacity = '1'; b.classList.remove('picked'); });
       return;
     }
-    showScreen('scrWait');
+
+    teamName = data.teamName;
+    cascade = data.cascade || '';
+    if (data.task1_questionIds) {
+      questionIds = data.task1_questionIds.split(',');
+    }
+    currentStage = parseInt(data.task1_stage) || 0;
+    if (currentStage > 0) currentStage--; // convert 1-indexed to 0-indexed
+
+    // Save to sessionStorage for page refresh
+    sessionStorage.setItem('studio2_group', num);
+
     document.getElementById('waitBadge').textContent = teamName;
+    document.getElementById('gameTeamName').textContent = teamName;
+
+    // If game is already running and team has cascade
+    if (gameState === 'task1' && cascade && questionIds.length > 0) {
+      if (data.task1_complete) {
+        showReveal();
+      } else {
+        showScreen('scrGame');
+        renderStage();
+      }
+    } else {
+      showScreen('scrWait');
+    }
+
     startPolling();
   });
 }
 
+// Restore session on page load
 function restoreSession() {
   const saved = sessionStorage.getItem('studio2_group');
   if (saved) {
