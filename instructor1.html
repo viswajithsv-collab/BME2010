@@ -164,7 +164,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
       <div class="ctrl-row" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
         <span style="font-family:var(--font-head);font-size:.7rem;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-right:8px">REVEAL:</span>
         <button class="btn btn-out" id="revealBtn0" onclick="doReveal(0)">Hide</button>
-        <button class="btn btn-gold" id="revealBtn1" onclick="doReveal(1)">① Three Diseases</button>
+        <button class="btn btn-gold" id="revealBtn1" onclick="doReveal(1)">① Three Arrhythmias</button>
         <button class="btn btn-gold" id="revealBtn2" onclick="doReveal(2)">② Convergence Map</button>
         <button class="btn btn-red" id="revealBtn3" onclick="doReveal(3)">③ Engineering Insight</button>
         <button class="btn btn-green" id="revealBtn4" onclick="doReveal(4)">④ Class Stats</button>
@@ -193,9 +193,9 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
     <div class="panel full">
       <div class="panel-title">Live Race — Task 1</div>
       <div class="legend">
-        <div class="legend-item"><div class="legend-dot A"></div>Cascade A — Ischemic</div>
-        <div class="legend-item"><div class="legend-dot B"></div>Cascade B — Dilated</div>
-        <div class="legend-item"><div class="legend-dot C"></div>Cascade C — Hypertensive</div>
+        <div class="legend-item"><div class="legend-dot A"></div>Cascade A — AFib</div>
+        <div class="legend-item"><div class="legend-dot B"></div>Cascade B — VTach</div>
+        <div class="legend-item"><div class="legend-dot C"></div>Cascade C — Heart Block</div>
       </div>
       <div class="race" id="raceTracker">
         <!-- Populated by JS -->
@@ -628,7 +628,7 @@ function demoTick() {
 
     t.responses.push({
       stage: t.stage,
-      questionId: t.cascade + t.stage + '-Q' + (Math.floor(Math.random()*3)+1),
+      questionId: t.cascade + t.stage + '-Q' + (Math.floor(Math.random()*2)+1),
       selectedLetter: selectedLetter,
       correct: correct
     });
